@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=utf8" language="java" %> 
+<%@ page contentType="text/html;charset=utf-8" language="java"%> 
 <html> 
 <head><title>登录失败</title></head> 
 <body> 

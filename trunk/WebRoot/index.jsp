@@ -1,26 +1,32 @@
-<%@ page language="java" import="java.util.*" pageEncoding="ISO-8859-1"%>
-<%
-String path = request.getContextPath();
-String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
-%>
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<%@ page contentType="text/html;charset=utf-8" language="java"%>
 <html>
-  <head>
-    <base href="<%=basePath%>">
-    
-    <title>My JSP 'index.jsp' starting page</title>
-	<meta http-equiv="pragma" content="no-cache">
-	<meta http-equiv="cache-control" content="no-cache">
-	<meta http-equiv="expires" content="0">    
-	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
-	<meta http-equiv="description" content="This is my page">
-	<!--
-	<link rel="stylesheet" type="text/css" href="styles.css">
-	-->
-  </head>
-  
-  <body>
-    This is my JSP page. <br>
-  </body>
+<head>
+<link rel="stylesheet" type="text/css" href="css/demo.css" />
+<script type="text/javascript" src="js/input.js"></script>
+</head>
+<body>
+	<div class="bd">
+		<div class="inner">
+			<div class="banner"></div>
+			<div id="login" class="main">
+				<div id="normal_login">
+					<form action="mylogin.action" method="post">
+						<div id="web_login">
+							<input type="text" class="login" name="user.username" value="请输入账号"
+								onFocus="onFocus(this)" onBlur="onBlur(this)"> <input
+								type="text" class="login" name="user.password" value="请输入密码"
+								onFocus="onFocus(this)" onBlur="onBlur(this)">
+							<button class="btn-login"></button>
+						</div>
+					</form>
+				</div>
+				<div class="login-nav">
+                <a href="#"><i class="i-info"></i>(C)哈尔滨工业大学软件学院</a>
+                <span class="split">|</span>
+                <a href="#">联系我们</a>
+            </div>
+			</div>
+		</div>
+	</div>
+</body>
 </html>

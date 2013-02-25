@@ -1,6 +1,6 @@
-<%@ page contentType="text/html;charset=utf8" language="java" %> 
+<%@ page contentType="text/html;charset=utf-8" language="java" %> 
 <html>
-<head></head>
+<head>OrgDemo</head>
 <body>
 	<form action="mylogin.action" method="post">
 		账户：<input type="text" name="user.username" /> 
