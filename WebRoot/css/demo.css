@@ -1,0 +1,73 @@
+body {
+background-color: #eee;
+overflow: visible;
+}
+
+input.login{
+	color:#999;
+	height:40px;
+	line-height:35px;
+	width:300px;
+	margin-top:20px;
+}
+
+.btn-login {
+margin-top:20px;
+background-color: transparent;
+width: 146px;
+height: 42px;
+padding: 0;
+display: inline-block;
+border: 0 none;
+background-image: url('../images/login-v4.png');
+background-position: -235px -160px;
+cursor: pointer;
+background-repeat: no-repeat;
+vertical-align: top;
+margin-right: 10px;
+font-size: 0;
+overflow: hidden;
+}
+
+.inner {
+width: 965px;
+margin: 100px auto;
+text-align: left;
+}
+
+.banner {
+position: relative;
+top: 10px;
+width: 535px;
+height: 332px;
+float: left;
+background-image: url('../images/login-banner.png');
+}
+
+.main {
+float: right;
+width: 360px;
+height: 322px;
+}
+
+.login-nav {
+clear: both;
+}
+
+.i-info {
+display: inline-block;
+width: 12px;
+height: 12px;
+font: 0/9999px arial;
+overflow: hidden;
+background-image: url(../images/login-v4.png);
+background-position: -416px 0;
+margin-right: 5px;
+vertical-align: -2px;
+}
+
+a, a:visited {
+color: #5b5b5b;
+text-decoration: none;
+font-size: 12px;
+}
