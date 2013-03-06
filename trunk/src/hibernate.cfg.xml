@@ -22,6 +22,7 @@
 			com.mysql.jdbc.Driver
 		</property>
 		<mapping resource="org/gaara/bean/User.hbm.xml" />
+		<mapping resource="org/gaara/bean/Detail.hbm.xml" />
 
 	</session-factory>
 

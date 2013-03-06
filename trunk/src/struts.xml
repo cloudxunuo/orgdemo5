@@ -7,4 +7,11 @@
 		<result name="failure">/failure.jsp</result>
 	</action>
 </package>
+<package name="ajax" extends="json-default">
+	<action name="gridHandler" class="org.gaara.action.GridHandlerAction">
+		<result type="json">
+			<param name="root">result</param>
+		</result>
+	</action>
+</package>
 </struts>
