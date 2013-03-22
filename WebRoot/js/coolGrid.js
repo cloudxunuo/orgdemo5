@@ -388,8 +388,9 @@ document.write("<script type='text/javascript' src='js/resize.js'><\/script>");
 								+ "<a href='#' class='sortDesc'>"
 								+ "<img alt='降序' src='img/desc.gif'></a></div></td></tr></table></th>");
 			} else {
-				$tr.append("<th width='" + colModel[i].width + "'>"
+				$tr.append("<th>"
 						+ colModel[i].display + "</th>");
+				//width='" + colModel[i].width + "'
 			}
 		}
 
