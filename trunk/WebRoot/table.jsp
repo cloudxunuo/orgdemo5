@@ -5,7 +5,9 @@
     <title>My JSP 'head.jsp' starting page</title>
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/coolGrid.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/mytable.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/colResizeable.css" />
 	<script type="text/javascript" src="js/bootstrap.js"></script>
 	<script type="text/javascript">
 	$(document).ready(function(){
@@ -13,11 +15,11 @@
 	  	url: './gridHandler.action',
 		colModel :
 		[
-			{type:'edit|detail',display: '操作', name : 'operator', width : 60},
-			{type:'data',display: '序号', name : 'ID', width : 100, key:true, editable:false},
-			{type:'data',display: '状态', name : 'STATUS', width : 60},
-			{type:'data',display: '审核人', name : 'AUDITOR', width : 80},
-			{type:'data',display: '审核日期', name : 'VERIFY_DATE', width : 100}
+			{type:'edit|detail',display: '操作', name : 'operator', width : 15},
+			{type:'data',display: '序号', name : 'ID', width : 15, key:true, editable:false, sortable:true},
+			{type:'data',display: '状态', name : 'STATUS', width : 23},
+			{type:'data',display: '审核人', name : 'AUDITOR', width : 23},
+			{type:'data',display: '审核日期', name : 'VERIFY_DATE', width : 24}
 		],
 		queryModel:
 		{

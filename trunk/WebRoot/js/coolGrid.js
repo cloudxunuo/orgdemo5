@@ -1,7 +1,7 @@
 //Our coolGrid jquery plugins
 //Author:Xuezi Zhang and Qiang Xu
 
-document.write("<script type='text/javascript' src='js/resize.js'><\/script>");
+document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'><\/script>");
 
 (function($) {
 	// 
@@ -33,7 +33,8 @@ document.write("<script type='text/javascript' src='js/resize.js'><\/script>");
 			order : $.fn.coolGrid.options.sortorder
 		};
 		loadTableData(pageParams, sortParams);
-		$.fn.coolGrid.table.tableresizer();
+		$.fn.coolGrid.table.colResizable({liveDrag:true,minWidth:50,gripInnerHtml:"<div class='grip'></div>", 
+		    draggingClass:"dragging"});
 	};
 
 	function addAttr2Div() {
@@ -289,7 +290,7 @@ document.write("<script type='text/javascript' src='js/resize.js'><\/script>");
 		if ($.fn.coolGrid.options.width != undefined)
 			$.fn.coolGrid.div
 					.append("<fieldset id='coolGridFieldset' style='width:"
-							+ (parseInt($.fn.coolGrid.options.width) - 30)
+							+ (parseInt($.fn.coolGrid.options.width)- 5)
 							+ "px;border:solid 1px #aaa;position:relative;'></fieldset>");
 		else
 			$.fn.coolGrid.div
@@ -312,7 +313,7 @@ document.write("<script type='text/javascript' src='js/resize.js'><\/script>");
 						":last");
 			}
 			$lastTR.append("<td>" + $queryModel.data[i].display + ": </td>");
-			$lastTR.append("<td><input type='text' name='"
+			$lastTR.append("<td><input type='text' class='input-small' name='"
 					+ $queryModel.data[i].name + "'></td>");
 		}
 		$tmpTable
@@ -366,31 +367,31 @@ document.write("<script type='text/javascript' src='js/resize.js'><\/script>");
 
 		var colModel = $.fn.coolGrid.options.colModel;
 
-		$table.addClass("table");
-		$table.css("text-align", "center");
+		$table.addClass("table table-bordered table-striped");
 		var $tr = $table.find("tr :last");
 
 		for ( var i = 0; i < colModel.length; i++) {
 			if (colModel[i].sortable == true) {
 				$tr
-						.append("<th width='"
+						.append("<th style='width:"
 								+ colModel[i].width
-								+ "'><table align='center' class='newtable'"
-								+"><tr><td class='tabtitletd'>"
+								+ "%;'><div"
+								+"><div style='float:left'>"
 								+ colModel[i].display
-								+ "</td><td><input type='hidden' value='"
+								+ "<input type='hidden' value='"
 								+ colModel[i].name
-								+ "'></input></td><td>"
+								+ "'></input></div><div style='float:left'>"
 								+ "<div style='overflow:false;clean:both'>"
 								+ "<a href='#' class='sortAsc'>"
 								+ "<img alt='升序' src='img/asc.gif'></a></div>"
 								+ "<div style='overflow:false;clean:both'>"
 								+ "<a href='#' class='sortDesc'>"
-								+ "<img alt='降序' src='img/desc.gif'></a></div></td></tr></table></th>");
+								+ "<img alt='降序' src='img/desc.gif'></a></div></div></div></th>");
 			} else {
-				$tr.append("<th>"
+				$tr.append("<th style='width:" + colModel[i].width +"%;'>"
 						+ colModel[i].display + "</th>");
-				//width='" + colModel[i].width + "'
+				//
+				//
 			}
 		}
 
@@ -647,53 +648,23 @@ document.write("<script type='text/javascript' src='js/resize.js'><\/script>");
 
 		if ($.fn.coolGrid.options.insertable != undefined) {
 			// 是否只是可添加数据
-			if (subTableCount == 1) {
-				// 如果是简单表
-				var rowCount = $table.children("tbody").children("tr").length;
-				if (rowCount % 2 != 0)
-					$table.append("<tr class='tabtd1'></tr>");
-				else
-					$table.append("<tr class='tabtd2'></tr>");
-				$tr = $table.find("tr :last");
-				for ( var k = 0; k < colModel[0].data.length; k++) {
-					$tr.append("<td></td>");
-					$td = $tr.find("td :last");
-					if (k == 0)
-						$td
-								.append("<a href='#' class='add'><img src='images/add.gif' border='0' alt='添加记录'></a>");
-					else {
-						$td
-								.append("<input style='width:90%;' type='text' name='"
-										+ colModel[0].data[k].name + "'>");
-					}
-				}
-			} else {
-				// 如果是复杂表
-				var rowCount = $("#subTable0").children("tbody").children("tr").length;
-				if (rowCount % 2 != 0) {
-					for ( var j = 0; j < subTableCount; j++) {
-						$("#subTable" + j).append("<tr class='tabtd1'></tr>");
-					}
-				} else {
-					for ( var j = 0; j < subTableCount; j++) {
-						$("#subTable" + j).append("<tr class='tabtd2'></tr>");
-					}
-				}
-				for ( var j = 0; j < subTableCount; j++) {
-					var subTable = colModel[j];
-					for ( var k = 0; k < subTable.data.length; k++) {
-						$("#subTable" + j + " tr :last").append("<td></td>");
-						$td = $("#subTable" + j + " tr :last td :last");
-						var colName = subTable.data[k].name;
-						if (k == 0 && j == 0)
-							$td
-									.append("<a href='#' class='add'><img src='images/add.gif' border='0' alt='添加记录'></a>");
-						else {
-							$td
-									.append("<input style='width:90%;' type='text' name='"
-											+ colName + "'>");
-						}
-					}
+			// 如果是简单表
+			var rowCount = $table.children("tbody").children("tr").length;
+			if (rowCount % 2 != 0)
+				$table.append("<tr class='tabtd1'></tr>");
+			else
+				$table.append("<tr class='tabtd2'></tr>");
+			$tr = $table.find("tr :last");
+			for ( var k = 0; k < colModel[0].data.length; k++) {
+				$tr.append("<td></td>");
+				$td = $tr.find("td :last");
+				if (k == 0)
+					$td
+							.append("<a href='#' class='add'><img src='images/add.gif' border='0' alt='添加记录'></a>");
+				else {
+					$td
+							.append("<input style='width:90%;' type='text' name='"
+									+ colModel[0].data[k].name + "'>");
 				}
 			}
 		}
