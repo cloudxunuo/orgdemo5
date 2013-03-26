@@ -67,11 +67,23 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		if ($tmp.attr("editable") == "true"){
 			var tmpName = $tmp.children("input").attr("name");
 			var tmpVal = $tmp.children("input").attr("value");
-			$tmp.html("<input style='width:90%;' type='text' name='"
-					+ tmpName
-					+ "' value='"
-					+ tmpVal
-					+ "'>");
+			var changed = false;
+			if ($tmp.children("input").attr("changed") == 'true'){
+				changed = true;
+			}
+			if (changed){
+				$tmp.html("<input style='width:90%;' changed='true' type='text' name='"
+						+ tmpName
+						+ "' value='"
+						+ tmpVal
+						+ "'>");
+			}else{
+				$tmp.html("<input style='width:90%;' type='text' name='"
+						+ tmpName
+						+ "' value='"
+						+ tmpVal
+						+ "'>");
+			}
 			//为新添加的input添加失去焦点函数
 			$tmp.children("input").focus();
 			$tmp.children("input").bind("blur",onEditBlur);
@@ -85,23 +97,33 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		
 		var tmpName = $tmp.attr("name");
 		var tmpVal = $tmp.attr("value");
+		var changed = false;
 		
+		if ($td.children("input").attr("changed") == "true"){
+			changed = true;
+		}
 		$td.html(tmpVal);
-		$td.append("<input style='width:90%;' type='hidden' name='"
-				+ tmpName
-				+ "' value='"
-				+ tmpVal
-				+ "'>");
-		//如果更改了 增加一个标记
-		if ($td.attr("changed") == "true"){
+		
+		if (changed){
+			$td.append("<input changed='true' style='width:90%;' type='hidden' name='"
+					+ tmpName
+					+ "' value='"
+					+ tmpVal
+					+ "'>");
+			//如果更改了 增加一个标记
 			$td.append("<i style='margin-left:15px' class='icon-pencil'></i>");
+		}else{
+			$td.append("<input style='width:90%;' type='hidden' name='"
+					+ tmpName
+					+ "' value='"
+					+ tmpVal
+					+ "'>");
 		}
 	}
 	
 	function onEditChange(event){
 		var $tmp = $(event.target);
-		var $td = $tmp.parent();
-		$td.attr("changed","true");
+		$tmp.attr("changed","true");
 	}
 
 	function sortAscClick(event) {
@@ -357,6 +379,9 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 	function drawTableHeader() {
 		// 最简单的table
+		if ($.fn.coolGrid.options.saveTableEnable != undefined) {
+			$.fn.coolGrid.div.append("<button id='coolGridSaveTable' class='btn btn-small btn-primary' type='button'>保存修改</button>");
+		}
 		$.fn.coolGrid.div.append("<table id='coolGridDataTable'></table>");
 		$.fn.coolGrid.table = $.fn.coolGrid.div.find("#coolGridDataTable");
 		$table = $.fn.coolGrid.table;
@@ -416,12 +441,6 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 						+ $.fn.coolGrid.options.queryParams[i].value
 						+ "'></input>");
 			}
-		}
-
-		// 如果定义了saveTableEnable，添加全表保存按钮
-		if ($.fn.coolGrid.options.saveTableEnable != undefined) {
-			$.fn.coolGrid.div
-					.append("<div style='width:70;float:right' id='coolGridSaveTableDiv'><font face='Webdings' class='redcolor'>4</font><a id='coolGridSaveTable' href='#'>全部保存</a></div>");
 		}
 
 		// 添加翻页功能
@@ -494,27 +513,23 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 					var $table = $.fn.coolGrid.table;
 					var tableRowCount = $table[0].rows.length;
 
-					if ($.fn.coolGrid.options.insertable == undefined) {
-						// 如果没有添加数据row
-						var lastRow2Save = tableRowCount;
-					} else {
-						// 如果有添加数据row
-						var lastRow2Save = tableRowCount - 1;
-					}
-
-					for ( var i = 1; i < lastRow2Save; i++) {// 第一行表头和最后一行不需要
+					for ( var i = 1; i < tableRowCount; i++) {// 第一行表头不需要
 						var rowChangeData = [];
 						var rowQueryData = [];
 						var $TR = $table.children("tbody").children("tr")
 								.filter(":eq(" + i + ")");
-						var queryData = $TR.find(":input:hidden")
+						if ($TR.find("input[changed='true']").length == 0){
+							//如果改行没有改动过
+							continue;
+						}
+						var queryData = $TR.find(":input:hidden").filter(".keyData")
 								.serializeArray();
 						for ( var k = 0; k < queryData.length; k++) {
 							rowQueryData.push(queryData[k]);
 						}
 
-						var changeData = $TR.find(":input").filter(
-								":not(:hidden)").serializeArray();
+						var changeData = $TR.find(":input:hidden").filter(
+								"[changed='true']").serializeArray();
 						for ( var k = 0; k < changeData.length; k++) {
 							if (changeData[k].value != ''
 									&& changeData[k].value != 'null')
@@ -549,6 +564,8 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 							alert("保存失败");
 						}
 					});
+					$table.find("td input").removeAttr("changed");
+					$table.find("td").children("i").remove();
 				});
 	}
 
@@ -569,7 +586,7 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 						$td = $tr.find("td :last");
 						var colName = colModel[k].name;
 						if (colModel[k].key != undefined)
-							$td.append("<input type='hidden' name='" + colName
+							$td.append("<input type='hidden' class='keyData' name='" + colName
 									+ "' value='" + data.dataSet[m][colName]
 									+ "'></input>");
 						var types = colModel[k].type.split("|");
@@ -683,9 +700,7 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 		$.post(url,//发送请求地址
 		tmp, function(data) {
-			console.log(data);
 			var dataJson = eval('(' + data + ')');
-			console.log(dataJson);
 			addData2Table(dataJson);
 			bindEvents();
 		});
