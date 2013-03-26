@@ -37,7 +37,8 @@
 		width:750,
 		pageSize: 3,
 		databaseTableName:'detail',
-		queryParams:[{name:'MAIN_ID',value:'SQ20120903ADMI0002'}]
+		queryParams:[{name:'MAIN_ID',value:'SQ20120903ADMI0002'}],
+		colResize:true
 		}
 	  	);
 	});
