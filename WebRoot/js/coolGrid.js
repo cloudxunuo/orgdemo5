@@ -58,8 +58,10 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		$table.find(".delete").bind("click", onDeleteClick);
 		$table.find(".update").bind("click", onUpdateClick);
 		
-		//绑定双击修改事件
-		$table.bind("dblclick",onEditClick);
+		//如果全表保存功能启用，绑定双击修改事件
+		if ($.fn.coolGrid.options.saveTableEnable != undefined) {
+			$table.bind("dblclick",onEditClick);
+		}
 	}
 	
 	function onEditClick(event){
