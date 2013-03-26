@@ -21,6 +21,7 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			drawQueryForm();
 		}
 
+		//画出表头
 		drawTableHeader();
 
 		var pageParams = {
@@ -32,9 +33,15 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			sortCol : $.fn.coolGrid.options.activeSortCol,
 			order : $.fn.coolGrid.options.sortorder
 		};
+		
+		//载入表格数据
 		loadTableData(pageParams, sortParams);
-		$.fn.coolGrid.table.colResizable({liveDrag:true,minWidth:50,gripInnerHtml:"<div class='grip'></div>", 
-		    draggingClass:"dragging"});
+		
+		//如果定义了该字段，那么列宽可调整
+		if ($.fn.coolGrid.options.colResize != undefined){
+			$.fn.coolGrid.table.colResizable({liveDrag:true,minWidth:50,gripInnerHtml:"<div class='grip'></div>", 
+			    draggingClass:"dragging"});
+		}
 	};
 
 	function addAttr2Div() {
@@ -50,6 +57,51 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		$table.find(".add").bind("click", onAddClick);
 		$table.find(".delete").bind("click", onDeleteClick);
 		$table.find(".update").bind("click", onUpdateClick);
+		
+		//绑定双击修改事件
+		$table.bind("dblclick",onEditClick);
+	}
+	
+	function onEditClick(event){
+		var $tmp = $(event.target);
+		if ($tmp.attr("editable") == "true"){
+			var tmpName = $tmp.children("input").attr("name");
+			var tmpVal = $tmp.children("input").attr("value");
+			$tmp.html("<input style='width:90%;' type='text' name='"
+					+ tmpName
+					+ "' value='"
+					+ tmpVal
+					+ "'>");
+			//为新添加的input添加失去焦点函数
+			$tmp.children("input").focus();
+			$tmp.children("input").bind("blur",onEditBlur);
+			$tmp.children("input").bind("change",onEditChange);
+		}
+	}
+	
+	function onEditBlur(event){
+		var $tmp = $(event.target);
+		var $td = $tmp.parent();
+		
+		var tmpName = $tmp.attr("name");
+		var tmpVal = $tmp.attr("value");
+		
+		$td.html(tmpVal);
+		$td.append("<input style='width:90%;' type='hidden' name='"
+				+ tmpName
+				+ "' value='"
+				+ tmpVal
+				+ "'>");
+		//如果更改了 增加一个标记
+		if ($td.attr("changed") == "true"){
+			$td.append("<i style='margin-left:15px' class='icon-pencil'></i>");
+		}
+	}
+	
+	function onEditChange(event){
+		var $tmp = $(event.target);
+		var $td = $tmp.parent();
+		$td.attr("changed","true");
 	}
 
 	function sortAscClick(event) {
@@ -94,33 +146,17 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		var $firstTR = $(event.target).parents("tr").filter(":first");
 		var clickRowIndex = $firstTR[0].rowIndex;
 		var colModel = $.fn.coolGrid.options.colModel;
-		var subTableCount = colModel.length;
 		var data = [];
-		if (subTableCount == 1) {
-			// 如果是简单表
-			var tmpData = $firstTR.find(":input").serializeArray();
-			for ( var key in tmpData) {
-				if (tmpData[key]["value"] != '')
-					data.push({
-						name : tmpData[key]["name"],
-						value : tmpData[key]["value"]
-					});
-			}
-		} else {
-			// 如果是复杂表
-			for ( var j = 0; j < subTableCount; j++) {
-				var $tmpTR = $("#subTable" + j).children("tbody")
-						.children("tr").filter(":eq(" + clickRowIndex + ")");
-				var tmpData = $tmpTR.find(":input").serializeArray();
-				for ( var key in tmpData) {
-					if (tmpData[key]["value"] != '')
-						data.push({
-							name : tmpData[key]["name"],
-							value : tmpData[key]["value"]
-						});
-				}
-			}
+
+		var tmpData = $firstTR.find(":input").serializeArray();
+		for ( var key in tmpData) {
+			if (tmpData[key]["value"] != '')
+				data.push({
+					name : tmpData[key]["name"],
+					value : tmpData[key]["value"]
+				});
 		}
+		
 		var param = {
 			opParam : "insert"
 		};
@@ -159,25 +195,9 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		var $firstTR = $(event.target).parents("tr").filter(":first");
 		var clickRowIndex = $firstTR[0].rowIndex;
 		var colModel = $.fn.coolGrid.options.colModel;
-		var subTableCount = colModel.length;
 		var data = [];
-		if (subTableCount == 1) {
-			// 如果是简单表
-			data = $firstTR.find(":input:hidden").serializeArray();
-		} else {
-			// 如果是复杂表
-			for ( var j = 0; j < subTableCount; j++) {
-				var $tmpTR = $("#subTable" + j).children("tbody")
-						.children("tr").filter(":eq(" + clickRowIndex + ")");
-				var tmpData = $tmpTR.find(":input:hidden").serializeArray();
-				for ( var key in tmpData) {
-					data.push({
-						name : tmpData[key]["name"],
-						value : tmpData[key]["value"]
-					});
-				}
-			}
-		}
+		// 如果是简单表
+		data = $firstTR.find(":input:hidden").serializeArray();
 		var param = {
 			opParam : "delete"
 		};
@@ -218,34 +238,17 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 				.serializeArray();
 		var clickRowIndex = $tmp.parent("tr").filter(":first")[0].rowIndex;
 		var colModel = $.fn.coolGrid.options.colModel;
-		var subTableCount = colModel.length;
 
 		var data = [];
-		if (subTableCount == 1) {
-			// 如果是简单表
-			var changeParams = $tmp.parent("tr").find(":input")
-					.serializeArray();
-			for ( var key in changeParams) {
-				if (changeParams[key]["value"] != '')
-					data.push({
-						name : changeParams[key]["name"],
-						value : changeParams[key]["value"]
-					});
-			}
-		} else {
-			// 如果是复杂表
-			for ( var j = 0; j < subTableCount; j++) {
-				var $tmpTR = $("#subTable" + j).children("tbody")
-						.children("tr").filter(":eq(" + clickRowIndex + ")");
-				var changeParams = $tmpTR.find(":input").serializeArray();
-				for ( var key in changeParams) {
-					if (changeParams[key]["value"] != 'null')
-						data.push({
-							name : changeParams[key]["name"],
-							value : changeParams[key]["value"]
-						});
-				}
-			}
+		// 如果是简单表
+		var changeParams = $tmp.parent("tr").find(":input")
+				.serializeArray();
+		for ( var key in changeParams) {
+			if (changeParams[key]["value"] != '')
+				data.push({
+					name : changeParams[key]["name"],
+					value : changeParams[key]["value"]
+				});
 		}
 
 		var $obj = $.fn.coolGrid.options;
@@ -483,90 +486,46 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		$("#coolGridSaveTable").click(
 				function() {
 					var colModel = $.fn.coolGrid.options.colModel;
-					var subTableCount = colModel.length;
 
 					var queryParams = [];
 					var changeParams = [];
 
-					if (subTableCount == 1) {
-						// 简单表
-						var $table = $.fn.coolGrid.table;
-						var tableRowCount = $table[0].rows.length;
+					// 简单表
+					var $table = $.fn.coolGrid.table;
+					var tableRowCount = $table[0].rows.length;
 
-						if ($.fn.coolGrid.options.insertable == undefined) {
-							// 如果没有添加数据row
-							var lastRow2Save = tableRowCount;
-						} else {
-							// 如果有添加数据row
-							var lastRow2Save = tableRowCount - 1;
-						}
-
-						for ( var i = 1; i < lastRow2Save; i++) {// 第一行表头和最后一行不需要
-							var rowChangeData = [];
-							var rowQueryData = [];
-							var $TR = $table.children("tbody").children("tr")
-									.filter(":eq(" + i + ")");
-							var queryData = $TR.find(":input:hidden")
-									.serializeArray();
-							for ( var k = 0; k < queryData.length; k++) {
-								rowQueryData.push(queryData[k]);
-							}
-
-							var changeData = $TR.find(":input").filter(
-									":not(:hidden)").serializeArray();
-							for ( var k = 0; k < changeData.length; k++) {
-								if (changeData[k].value != ''
-										&& changeData[k].value != 'null')
-									rowChangeData.push(changeData[k]);
-							}
-							changeParams.push({
-								data : rowChangeData
-							});
-							queryParams.push({
-								data : rowQueryData
-							});
-						}
-
+					if ($.fn.coolGrid.options.insertable == undefined) {
+						// 如果没有添加数据row
+						var lastRow2Save = tableRowCount;
 					} else {
-						// 复杂表
-						var tableRowCount = $("#subTable0")[0].rows.length;
+						// 如果有添加数据row
+						var lastRow2Save = tableRowCount - 1;
+					}
 
-						if ($.fn.coolGrid.options.insertable == undefined) {
-							// 如果没有添加数据row
-							var lastRow2Save = tableRowCount;
-						} else {
-							// 如果有添加数据row
-							var lastRow2Save = tableRowCount - 1;
+					for ( var i = 1; i < lastRow2Save; i++) {// 第一行表头和最后一行不需要
+						var rowChangeData = [];
+						var rowQueryData = [];
+						var $TR = $table.children("tbody").children("tr")
+								.filter(":eq(" + i + ")");
+						var queryData = $TR.find(":input:hidden")
+								.serializeArray();
+						for ( var k = 0; k < queryData.length; k++) {
+							rowQueryData.push(queryData[k]);
 						}
 
-						for ( var i = 1; i < lastRow2Save; i++) {// 第一行表头和最后一行不需要
-							var rowChangeData = [];
-							var rowQueryData = [];
-							for ( var j = 0; j < subTableCount; j++) {
-								var $subTR = $("#subTable" + j).children(
-										"tbody").children("tr").filter(
-										":eq(" + i + ")");
-								var queryData = $subTR.find(":input:hidden")
-										.serializeArray();
-								for ( var k = 0; k < queryData.length; k++) {
-									rowQueryData.push(queryData[k]);
-								}
-
-								var changeData = $subTR.find(":input").filter(
-										":not(:hidden)").serializeArray();
-								for ( var k = 0; k < changeData.length; k++) {
-									if (changeData[k].value != ''
-											&& changeData[k].value != 'null')
-										rowChangeData.push(changeData[k]);
-								}
-							}
-							changeParams.push({
-								data : rowChangeData
-							});
-							queryParams.push({
-								data : rowQueryData
-							});
+						var changeData = $TR.find(":input").filter(
+								":not(:hidden)").serializeArray();
+						for ( var k = 0; k < changeData.length; k++) {
+							if (changeData[k].value != ''
+									&& changeData[k].value != 'null')
+								rowChangeData.push(changeData[k]);
 						}
+						changeParams.push({
+							data : rowChangeData
+						});
+						queryParams.push({
+							data : rowQueryData
+						});
 					}
 
 					// 获得数据之后向后台提交
@@ -617,15 +576,18 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 						for ( var n = 0; n < types.length; n++) {
 							switch (types[n]) {
 							case "data":
-								if (colModel[k].editable == undefined)
-									$td
-											.append("<input style='width:90%;' type='text' name='"
-													+ colName
-													+ "' value='"
-													+ data.dataSet[m][colName]
-													+ "'>");
-								else
+								if (colModel[k].editable == undefined){
 									$td.append(data.dataSet[m][colName]);
+									$td.attr("editable","true");
+									$td.append("<input style='width:90%;' type='hidden' name='"
+											+ colName
+											+ "' value='"
+											+ data.dataSet[m][colName]
+											+ "'>");
+									}
+								else{
+									$td.append(data.dataSet[m][colName]);
+								}
 								break;
 							case "insert":
 								$td
