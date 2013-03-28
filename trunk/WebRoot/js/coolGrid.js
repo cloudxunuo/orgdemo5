@@ -20,6 +20,11 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			// 如果指定了查询框
 			drawQueryForm();
 		}
+		
+		//如故insertable为true，预先设置好新增数据的modal
+		if ($.fn.coolGrid.options.insertModel != undefined){
+			SetInsertModal();
+		}
 
 		//画出表头
 		drawTableHeader();
@@ -43,6 +48,65 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			    draggingClass:"dragging"});
 		}
 	};
+	
+	function SetInsertModal(){
+		$.fn.coolGrid.div.append("<div id='coolGridInsertModal' class='modal hide fade' tabindex='-1' role='dialog'"
+				+"		aria-labelledby='myModalLabel' aria-hidden='true' style='top:100px;width:500px'>"
+				+"		<div class='modal-header'>"
+				+"			<button type='button' class='close' data-dismiss='modal'"
+				+"				aria-hidden='true'>×</button>"
+				+"			<h3 id='myModalLabel'>新增数据</h3>"
+				+"		</div>"
+				+"		<div class='modal-body'>"
+				+"		<form id='insertForm' class='form-horizontal'></form> </div>"
+				+"		<div class='modal-footer'>"
+				+"			<button class='btn' data-dismiss='modal' aria-hidden='true'>关闭</button>"
+				+"			<button id='insertBtn' class='btn btn-primary'>添加数据</button>"
+				+"		</div>"
+				+"	</div>");
+		//对modal的一些属性进行设置
+		$('#coolGridInsertModal').modal({
+			backdrop: "static",
+			show:false
+			});
+		//根据配置向modal中添加数据
+		var $form = $("#insertForm");
+		
+		var insertModel = $.fn.coolGrid.options.insertModel;
+		for (var i = 0; i < insertModel.length; i++){
+			$form.append("<div class='control-group'></div>");
+			var $ctrlGroup = $form.find("div.control-group:last");
+			var types = insertModel[i].type.split("|");
+			for ( var n = 0; n < types.length; n++) {
+				switch (types[n]) {
+				case "text":
+					if (insertModel[i].key != undefined){
+						$ctrlGroup.append("<label class='control-label' for='"+
+								insertModel[i].name+""+i+"'>"+insertModel[i].display+"</label>"
+								+"<div class='controls'>"
+								+"  <input class='input-medium' type='text' id='"+
+								insertModel[i].name+""+i+"' placeholder='"+insertModel[i].display+
+								"' value='' name='"+insertModel[i].name+"' required key='true'>"+"</div>");
+					}else{
+						$ctrlGroup.append("<label class='control-label' for='"+
+								insertModel[i].name+""+i+"'>"+insertModel[i].display+"</label>"
+								+"<div class='controls'>"
+								+"  <input class='input-medium' type='text' id='"+
+								insertModel[i].name+""+i+"' placeholder='"+insertModel[i].display+
+								"' value='' name='"+insertModel[i].name+"'>"+"</div>");
+					}
+					break;
+				case "number":
+					break;
+				case "bool":
+					break;
+				}
+			}
+		}
+		
+		//绑定按钮事件
+		$("#insertBtn").bind("click", onAddClick);
+	}
 
 	function addAttr2Div() {
 		if ($.fn.coolGrid.options.width == undefined)
@@ -54,7 +118,6 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 	function bindEvents() {
 		$table = $.fn.coolGrid.table;
-		$table.find(".add").bind("click", onAddClick);
 		$table.find(".delete").bind("click", onDeleteClick);
 		$table.find(".update").bind("click", onUpdateClick);
 		
@@ -65,10 +128,14 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 	}
 	
 	function onEditClick(event){
+		//此函数的语句顺序极为重要，请勿轻易调整
 		var $tmp = $(event.target);
 		if ($tmp.attr("editable") == "true"){
 			var tmpName = $tmp.children("input").attr("name");
 			var tmpVal = $tmp.children("input").attr("value");
+			if (tmpVal == "nullval"){
+				tmpVal="";//如果该单元格没有值
+			}
 			var changed = false;
 			if ($tmp.children("input").attr("changed") == 'true'){
 				changed = true;
@@ -94,17 +161,26 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 	}
 	
 	function onEditBlur(event){
+		//此函数的语句顺序极为重要，请勿轻易调整
 		var $tmp = $(event.target);
 		var $td = $tmp.parent();
 		
 		var tmpName = $tmp.attr("name");
 		var tmpVal = $tmp.attr("value");
+		if (tmpVal==""){
+			tmpVal = "nullval";
+		}
 		var changed = false;
 		
 		if ($td.children("input").attr("changed") == "true"){
 			changed = true;
 		}
-		$td.html(tmpVal);
+		
+		if (tmpVal=="nullval"){
+			$td.html("");
+		}else{
+			$td.html(tmpVal);
+		}
 		
 		if (changed){
 			$td.append("<input changed='true' style='width:90%;' type='hidden' name='"
@@ -167,18 +243,33 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 	}
 
 	function onAddClick(event) {
-		var $firstTR = $(event.target).parents("tr").filter(":first");
-		var clickRowIndex = $firstTR[0].rowIndex;
-		var colModel = $.fn.coolGrid.options.colModel;
 		var data = [];
-
-		var tmpData = $firstTR.find(":input").serializeArray();
-		for ( var key in tmpData) {
-			if (tmpData[key]["value"] != '')
+		var tmpData = $("#insertForm").find("input");
+		var keyNull = false;
+		
+		tmpData.each(function(){
+			var val = $(this).val();
+			if (val != ''){
 				data.push({
-					name : tmpData[key]["name"],
-					value : tmpData[key]["value"]
+					name : $(this).attr("name"),
+					value : val
 				});
+			}else{
+				if ($(this).attr("key") == "true"){
+					keyNull = true;
+				}
+			}
+		});
+		
+		//如果主键没填写
+		if (keyNull){
+			var $inputNeed =  $("#insertForm").find("input[key='true']").filter("[value='']:first");
+			if ($inputNeed.attr("tips") != "true"){
+				$inputNeed.after("<span style='color:red;margin-left:10px'>必须填写的数据</span>");
+				$inputNeed.attr("tips","true");
+			}
+			$inputNeed.focus();
+			return ;
 		}
 		
 		var param = {
@@ -214,14 +305,16 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 				alert("插入失败");
 			}
 		});
+		$("#coolGridInsertModal").modal('hide');//隐藏对话框
+		$("#insertForm").find("input").attr("tips","false");
+		$("#insertForm").find("input").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
+		$("#insertForm").find("span").remove();
 	}
 	function onDeleteClick(event) {
 		var $firstTR = $(event.target).parents("tr").filter(":first");
-		var clickRowIndex = $firstTR[0].rowIndex;
-		var colModel = $.fn.coolGrid.options.colModel;
 		var data = [];
 		// 如果是简单表
-		data = $firstTR.find(":input:hidden").serializeArray();
+		data = $firstTR.find(":input:hidden").filter(".keyData").serializeArray();
 		var param = {
 			opParam : "delete"
 		};
@@ -340,7 +433,7 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 						":last");
 			}
 			$lastTR.append("<td>" + $queryModel.data[i].display + ": </td>");
-			$lastTR.append("<td><input type='text' class='input-small' name='"
+			$lastTR.append("<td><input type='text' class='input-medium' name='"
 					+ $queryModel.data[i].name + "'></td>");
 		}
 		$tmpTable
@@ -381,10 +474,19 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 	function drawTableHeader() {
 		// 最简单的table
+		
+		//添加保存修改按钮
 		if ($.fn.coolGrid.options.saveTableEnable != undefined) {
-			$.fn.coolGrid.div.append("<button id='coolGridSaveTable' class='btn btn-small btn-primary' type='button'>保存修改</button>");
+			$.fn.coolGrid.div.append("<button id='coolGridSaveTable' class='btn btn-small btn-warning' type='button'><i class='icon-ok icon-white'></i> 保存修改</button>");
 		}
-		$.fn.coolGrid.div.append("<table id='coolGridDataTable'></table>");
+		//添加新增数据按钮
+		if ($.fn.coolGrid.options.insertModel != undefined) {
+			$.fn.coolGrid.div.append("<a href='#coolGridInsertModal' role='button' class='btn btn-small btn-warning' data-toggle='modal' style='margin-left:2px'><i class='icon-plus icon-white'></i> 新增数据</a>");
+		}
+		
+		$.fn.coolGrid.div.append("<br/>");
+		
+		$.fn.coolGrid.div.append("<table id='coolGridDataTable' style='margin-top:2px;background-color:#fffba0'></table>");
 		$.fn.coolGrid.table = $.fn.coolGrid.div.find("#coolGridDataTable");
 		$table = $.fn.coolGrid.table;
 
@@ -411,12 +513,9 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 								+ "<input type='hidden' value='"
 								+ colModel[i].name
 								+ "'></input></div><div style='float:left'>"
-								+ "<div style='overflow:false;clean:both'>"
-								+ "<a href='#' class='sortAsc'>"
-								+ "<img alt='升序' src='img/asc.gif'></a></div>"
-								+ "<div style='overflow:false;clean:both'>"
-								+ "<a href='#' class='sortDesc'>"
-								+ "<img alt='降序' src='img/desc.gif'></a></div></div></div></th>");
+								+ "<div class='sortAsc' style='overflow:false;clean:both'></div>"
+								+ "<div class='sortDesc' style='overflow:false;clean:both'>"
+								+ "</div></div></div></th>");
 			} else {
 				$tr.append("<th style='width:" + colModel[i].width +"%;'>"
 						+ colModel[i].display + "</th>");
@@ -447,7 +546,14 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 		// 添加翻页功能
 		$.fn.coolGrid.div
-				.append("<div id='pageDiv' style='width:200px;height:20px;'><a href='#'><font id='first' face='Webdings' style='color: #0000ff'>9</font></a>&nbsp;<a href='#'><font id='prev' face='Webdings' style='color: #0000ff'>3</font></a>&nbsp;<input type='text' id='currentPage' name='currentPage' value='1' style='width: 30px'/>/&nbsp;<input readonly type='text' id='pageCount' name='pageCount' value='1' style='width: 30px;border:0;background:transparent;'/><a href='#'><font id='next' face='Webdings' style='color: #0000ff'>4</font></a>&nbsp;<a href='#'><font id='last' face='Webdings' style='color: #0000ff'>:</font></a></div>");
+				.append("<div id='pageDiv' style='width:200px;height:20px;'><a href='#'><font id='first' " +
+						"face='Webdings' style='color: #0000ff'>9</font></a>&nbsp;<a href='#'><font id='prev'" +
+						" face='Webdings' style='color: #0000ff'>3</font></a>&nbsp;<input type='text' id='currentPage'" +
+						" name='currentPage' value='1' style='width:30px;height:20px'/>/&nbsp;<input readonly " +
+						"type='text' id='pageCount' name='pageCount' value='1' style='width: 30px;height:20px;border:0;" +
+						"background:transparent;'/><a href='#'><font id='next' face='Webdings' " +
+						"style='color: #0000ff'>4</font></a>&nbsp;<a href='#'><font id='last' face='Webdings' " +
+						"style='color: #0000ff'>:</font></a></div>");
 
 		// 画好header之后，绑定一些事件，这些事件只绑定一次，跟bindEvents函数不同
 		bindEventsOnce();
@@ -598,12 +704,18 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 								if (colModel[k].editable == undefined){
 									$td.append(data.dataSet[m][colName]);
 									$td.attr("editable","true");
-									$td.append("<input style='width:90%;' type='hidden' name='"
-											+ colName
-											+ "' value='"
-											+ data.dataSet[m][colName]
-											+ "'>");
+									if (data.dataSet[m][colName] == null){
+										$td.append("<input style='width:90%;' type='hidden' name='"
+												+ colName
+												+ "' value='nullval'>");
+									}else{
+										$td.append("<input style='width:90%;' type='hidden' name='"
+												+ colName
+												+ "' value='"
+												+ data.dataSet[m][colName]
+												+ "'>");
 									}
+								}
 								else{
 									$td.append(data.dataSet[m][colName]);
 								}
@@ -614,38 +726,15 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 								break;
 							case "delete":
 								$td
-										.append("<a href='#' class='delete'><img src='images/delete.gif' border='0' alt='删除记录'></a>");
+										.append("<a class='btn btn-warning btn-mini delete' href='#'><i class='icon-remove icon-white'></i> 删除</a>");
 								break;
-							case "update":
+							case "edit":
 								$td
-										.append("<a href='#' class='update'><img src='images/update.gif' border='0' alt='删除记录'></a>");
+										.append("<a class='btn btn-warning btn-mini edit' href='#'><i class='icon-pencil icon-white'></i> 编辑</a>");
 								break;
 							}
 						}
 					}
-				}
-			}
-		}
-
-		if ($.fn.coolGrid.options.insertable != undefined) {
-			// 是否只是可添加数据
-			// 如果是简单表
-			var rowCount = $table.children("tbody").children("tr").length;
-			if (rowCount % 2 != 0)
-				$table.append("<tr class='tabtd1'></tr>");
-			else
-				$table.append("<tr class='tabtd2'></tr>");
-			$tr = $table.find("tr :last");
-			for ( var k = 0; k < colModel[0].data.length; k++) {
-				$tr.append("<td></td>");
-				$td = $tr.find("td :last");
-				if (k == 0)
-					$td
-							.append("<a href='#' class='add'><img src='images/add.gif' border='0' alt='添加记录'></a>");
-				else {
-					$td
-							.append("<input style='width:90%;' type='text' name='"
-									+ colModel[0].data[k].name + "'>");
 				}
 			}
 		}

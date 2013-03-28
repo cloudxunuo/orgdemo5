@@ -1,15 +1,15 @@
 .grip {
-	width:20px;
+	width:10px;
 	height:30px;
-	margin-top:-3px;
-	background-image:url(../img/grip.png);
-	margin-left:-5px;
+	margin-top:2px;
+	background-image:url(../img/grip1.png);
+	margin-left:0px;
 	position:relative;
 	z-index:88;
 	cursor:e-resize}
 
 .grip:hover {
-	background-position-x:-20px}
+	background-position-x:-10px}
 
 .dragging .grip {
-	background-position-x:-40px}
+	background-position-x:-20px}

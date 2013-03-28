@@ -72,6 +72,9 @@ public class GridHandlerAction{
 			{
 				String name = rowChangeParams.getJSONObject(i).getString("name");
 				String value = rowChangeParams.getJSONObject(i).getString("value");
+				if (value.equals("nullval")){
+					value = "";//将null转化成无值
+				}
 				if (i == rowChangeParams.length() - 1){
 					sql = sql + name + "='" + value + "' ";
 				}else{
