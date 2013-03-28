@@ -8,6 +8,13 @@
     <link href="css/bootstrap.css" rel="stylesheet" media="screen">
     <script src="http://code.jquery.com/jquery.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+    	$("#dateinput").change(function (){
+    		console.log($("dateinput").serializeArray());
+    	});
+    });
+    </script>
   </head>
   <body>
 	<!-- Button to trigger modal -->
@@ -142,7 +149,7 @@
     </ul>
   </div>
 </div>
-<input type="email" required placeholder="test@gmail.com">
+<input id="dateinput" type="date" required value="2012-03-12">
 <div class="btn-toolbar">
   <div class="btn-group">
     <a class="btn" href="#"><i class="icon-align-left"></i></a>

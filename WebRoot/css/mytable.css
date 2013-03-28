@@ -1,0 +1,29 @@
+@import url(colResizeable.css);
+
+.sortAsc{
+	width:16px;
+	height:10px;
+	margin-top:0px;
+	background-image:url(../img/asc.png);
+	margin-left:5px;
+	position:relative;
+	z-index:88;
+	cursor:pointer;
+	}
+
+.sortAsc:hover {
+	background-position-x:-16px}
+	
+.sortDesc {
+	width:16px;
+	height:10px;
+	margin-top:1px;
+	background-image:url(../img/desc.png);
+	margin-left:5px;
+	position:relative;
+	z-index:88;
+	cursor:pointer;
+	}
+
+.sortDesc:hover {
+	background-position-x:-16px}

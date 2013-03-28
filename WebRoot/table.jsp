@@ -5,9 +5,8 @@
     <title>My JSP 'head.jsp' starting page</title>
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/coolGrid.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/mytable.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="css/colResizeable.css" />
+    <link rel="stylesheet" type="text/css" href="css/mytable.css" />
 	<script type="text/javascript" src="js/bootstrap.js"></script>
 	<script type="text/javascript">
 	$(document).ready(function(){
@@ -15,11 +14,11 @@
 	  	url: './gridHandler.action',
 		colModel :
 		[
-			{type:'edit|detail',display: '操作', name : 'operator', width : 15},
 			{type:'data',display: '序号', name : 'ID', width : 15, key:true, editable:false, sortable:true},
 			{type:'data',display: '状态', name : 'STATUS', width : 23},
 			{type:'data',display: '审核人', name : 'AUDITOR', width : 23},
-			{type:'data',display: '审核日期', name : 'VERIFY_DATE', width : 24}
+			{type:'data',display: '审核日期', name : 'VERIFY_DATE', width : 24},
+			{type:'delete',display: '操作', name : 'operator', width : 15}
 		],
 		queryModel:
 		{
@@ -39,9 +38,16 @@
 		databaseTableName:'detail',
 		queryParams:[{name:'MAIN_ID',value:'SQ20120903ADMI0002'}],
 		colResize:true,
-		saveTableEnable:true
-		}
-	  	);
+		saveTableEnable:true,
+		insertModel:
+		[
+			{type:'text', display:'序号',name:'ID', key:true},
+			{type:'text', display:'状态',name:'STATUS', key:true},
+			{type:'text', display:'审核人',name:'AUDITOR'},
+			{type:'text', display:'实际审核人',name:'REAL_AUDITOR'},
+			{type:'text', display:'审核日期',name:'VERIFY_DATE'}
+		]
+		});
 	});
 	</script>
   </head>
