@@ -410,59 +410,52 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 	function drawQueryForm() {
 		var infoCountPerRow = 3;
-		var spanSize = 12/infoCountPerRow;
 
-		if ($.fn.coolGrid.options.width != undefined)
-			$.fn.coolGrid.div
-					.append("<fieldset id='coolGridFieldset' style='width:"
-							+ (parseInt($.fn.coolGrid.options.width)- 5)
-							+ "px;border:solid 1px #aaa;position:relative;'></fieldset>");
-		else
-			$.fn.coolGrid.div
-					.append("<fieldset id='coolGridFieldset' style='width:"
-							+ $.fn.coolGrid.defaultWidth
-							+ "px;border:solid 1px #aaa;position:relative;'></fieldset>");
+        if ($.fn.coolGrid.options.width != undefined)
+                $.fn.coolGrid.div
+                                .append("<fieldset id='coolGridFieldset' style='width:"
+                                                + (parseInt($.fn.coolGrid.options.width)- 5)
+                                                + "px;border:solid 1px #aaa;position:relative;'></fieldset>");
+        else
+                $.fn.coolGrid.div
+                                .append("<fieldset id='coolGridFieldset' style='width:"
+                                                + $.fn.coolGrid.defaultWidth
+                                                + "px;border:solid 1px #aaa;position:relative;'></fieldset>");
 
-		var $queryModel = $.fn.coolGrid.options.queryModel;
-		var $queryFieldset = $("#coolGridFieldset");
-		$queryFieldset.append("<legend>" + $queryModel.legend + "</legend>");
-		$queryFieldset.append("<div id='coolGridQueryForm' style='padding:5px;'></div>");
-		$("#coolGridQueryForm").append("<form class='form-horizontal'></form>");
-		var $form = $("#coolGridQueryForm").children("form");
-		var $lastDiv;
-		for ( var i = 0; i < $queryModel.data.length; i++) {
-			if (i % infoCountPerRow == 0) {
-				$form.append("<div class='row-fluid'></div>");
-				$lastDiv = $form.children("div.row-fluid").filter(":last");
-			}
-			$lastDiv.append("<div class='span"+spanSize+"'><div class='control-group'></div></div>");
-			var $spanDiv = $lastDiv.find("div.control-group").filter(":last");
-			$spanDiv.append("<label class='control-label' style='width:80px' for='"+$queryModel.data[i].name
-					+""+i+"'>" + $queryModel.data[i].display + "</label>");
-			$spanDiv.append("<div class='controls'  style='margin-left:100px' ><input type='text' class='input-medium' id='"+
-					$queryModel.data[i].name+""+i+"' name='"+ $queryModel.data[i].name + "' value=''></div>");
-		}
-		$form.append("<div class='row-fluid'></div>");
-		$lastDiv = $form.children("div.row-fluid").filter(":last");
-		$lastDiv.append("<div class='span"+spanSize+" offset"+(12 - spanSize)+"'></div>");
-		$lastDiv.children("div").append("<button id='coolGridSearch' type='button' class='btn btn-primary' data-loading-text='查询中...'>查询数据</button>");
-		$lastDiv.children("div").append("<button id='coolGridReset' type='button' class='btn btn-primary'>重置</button>");
-		$.fn.coolGrid.div.append("<br>");
+        var $queryModel = $.fn.coolGrid.options.queryModel;
+        var $queryFieldset = $("#coolGridFieldset");
+        $queryFieldset.append("<legend>" + $queryModel.legend + "</legend>");
+        $queryFieldset
+                        .append("<div id='coolGridQueryForm' style='padding:5px;'></div>");
+        $("#coolGridQueryForm").append("<table style='width:100%;'></table>");
+        var $tmpTable = $("#coolGridQueryForm").children("table");
+        var $lastTR;
+        for ( var i = 0; i < $queryModel.data.length; i++) {
+                if (i % infoCountPerRow == 0) {
+                        $tmpTable.append("<tr></tr>");
+                        $lastTR = $tmpTable.children("tbody").children("tr").filter(
+                                        ":last");
+                }
+                $lastTR.append("<td>" + $queryModel.data[i].display + ": </td>");
+                $lastTR.append("<td><input type='text' class='input-medium' name='"
+                                + $queryModel.data[i].name + "'></td>");
+        }
+        $tmpTable
+                        .append("<tr><td style='text-align:right;padding-top:5px;padding-right:20px;' colspan='"
+                                        + (infoCountPerRow * 2) + "'></td></tr>");
+        $lastTR = $tmpTable.children("tbody").children("tr").filter(":last");
+        $lastTR.children("td").append("<button id='coolGridSearch' type='button' class='btn btn-primary'>查询数据</button>");
+        $lastTR.children("td").append("<button id='coolGridReset' type='button' class='btn btn-primary'>重置</button>");
+        $.fn.coolGrid.div.append("<br>");
 
-		// 绑定查询和重置事件
-		$("#coolGridSearch").bind("click", queryFormSearch);
-		$("#coolGridReset").click(function() {
-			$("#coolGridQueryForm :input").val("");
-		});
+        // 绑定查询和重置事件
+        $("#coolGridSearch").bind("click", queryFormSearch);
+        $("#coolGridReset").click(function() {
+                $("#coolGridQueryForm :input").val("");
+        });
 	}
 
 	function queryFormSearch() {
-		var btn = $(this);
-        btn.button("loading");
-        setTimeout(function () {
-          btn.button("reset");
-        }, 3000);
-		
 		var currentPage = 1;
 		var pageCount = parseInt($("#pageCount").val());
 		var pageParams = {

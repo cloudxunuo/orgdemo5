@@ -36,7 +36,7 @@
 				{type:'data', display:'状态',name:'STATUS'},
 				{type:'data', display:'审核人',name:'AUDITOR'},
 				{type:'data', display:'实际审核人',name:'REAL_AUDITOR'},
-				{type:'data', display:'审核日期啊客户飞洒',name:'VERIFY_DATE'}
+				{type:'data', display:'审核日期',name:'VERIFY_DATE'}
 				]
 		},
 		sortorder: 'asc',
