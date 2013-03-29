@@ -1,7 +1,8 @@
 //Our coolGrid jquery plugins
 //Author:Xuezi Zhang and Qiang Xu
 
-document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'><\/script>");
+document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'></script>");
+document.write("<script type='text/javascript' src='js/page.js'></script>");
 
 (function($) {
 	// 
@@ -38,6 +39,10 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			sortCol : $.fn.coolGrid.options.activeSortCol,
 			order : $.fn.coolGrid.options.sortorder
 		};
+		
+		//初始化全局变量
+		$.fn.coolGrid.activeColName = $.fn.coolGrid.options.activeSortCol;
+		$.fn.coolGrid.activeSortOrder = $.fn.coolGrid.options.sortorder;
 		
 		//载入表格数据
 		loadTableData(pageParams, sortParams);
@@ -226,6 +231,10 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			sortCol : colName,
 			order : "asc"
 		};
+		
+		//修改全局变量
+		$.fn.coolGrid.activeColName = colName;
+		$.fn.coolGrid.activeSortOrder = "asc";
 
 		loadTableData(pageParams, sortParams);
 	}
@@ -246,6 +255,10 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			order : "desc"
 		};
 
+		//修改全局变量
+		$.fn.coolGrid.activeColName = colName;
+		$.fn.coolGrid.activeSortOrder = "desc";
+		
 		loadTableData(pageParams, sortParams);
 	}
 
@@ -295,8 +308,8 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		$.post(url,// 发送请求地址
 		finalparam, function(data) {
 			if (data == "success") {
-				var currentPage = parseInt($("#currentPage").val());
-				var pageCount = parseInt($("#pageCount").val());
+				var currentPage = $.fn.coolGrid.currentPage;
+				var pageCount = $.fn.coolGrid.pageCount;
 				var pageParams = {
 					currentPage : currentPage,
 					pageSize : $.fn.coolGrid.options.pageSize,
@@ -331,8 +344,8 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		$.post(url,// 发送请求地址
 		finalparam, function(data) {
 			if (data == "success") {
-				var currentPage = parseInt($("#currentPage").val());
-				var pageCount = parseInt($("#pageCount").val());
+				var currentPage = $.fn.coolGrid.currentPage;
+				var pageCount = $.fn.coolGrid.pageCount;
 				var pageParams = {
 					currentPage : currentPage,
 					pageSize : $.fn.coolGrid.options.pageSize,
@@ -402,9 +415,10 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			totalPage : pageCount
 		};
 		var sortParams = {
-			sortCol : $.fn.coolGrid.options.activeSortCol,
-			order : $.fn.coolGrid.options.sortorder
+			sortCol : $.fn.coolGrid.activeColName,
+			order : $.fn.coolGrid.activeSortOrder
 		};
+		
 		loadTableData(pageParams, sortParams);
 	}
 
@@ -436,16 +450,15 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
                         $lastTR = $tmpTable.children("tbody").children("tr").filter(
                                         ":last");
                 }
-                $lastTR.append("<td>" + $queryModel.data[i].display + ": </td>");
+                $lastTR.append("<td>" + $queryModel.data[i].display + "</td>");
                 $lastTR.append("<td><input type='text' class='input-medium' name='"
                                 + $queryModel.data[i].name + "'></td>");
         }
-        $tmpTable
-                        .append("<tr><td style='text-align:right;padding-top:5px;padding-right:20px;' colspan='"
+        $tmpTable.append("<tr><td style='text-align:right;padding-top:5px;padding-right:20px;' colspan='"
                                         + (infoCountPerRow * 2) + "'></td></tr>");
         $lastTR = $tmpTable.children("tbody").children("tr").filter(":last");
-        $lastTR.children("td").append("<button id='coolGridSearch' type='button' class='btn btn-primary'>查询数据</button>");
-        $lastTR.children("td").append("<button id='coolGridReset' type='button' class='btn btn-primary'>重置</button>");
+        $lastTR.children("td").append("<button id='coolGridSearch' type='button' class='btn btn-primary btn-small'>查询数据</button>");
+        $lastTR.children("td").append("<button id='coolGridReset' type='button' class='btn btn-primary btn-small' style='margin-left:10px'>重置</button>");
         $.fn.coolGrid.div.append("<br>");
 
         // 绑定查询和重置事件
@@ -457,15 +470,15 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 	function queryFormSearch() {
 		var currentPage = 1;
-		var pageCount = parseInt($("#pageCount").val());
+		var pageCount = $.fn.coolGrid.pageCount;
 		var pageParams = {
 			currentPage : currentPage,
 			pageSize : $.fn.coolGrid.options.pageSize,
 			totalPage : pageCount
 		};
 		var sortParams = {
-			sortCol : $.fn.coolGrid.options.activeSortCol,
-			order : $.fn.coolGrid.options.sortorder
+			sortCol : $.fn.coolGrid.activeColName,
+			order : $.fn.coolGrid.activeSortOrder
 		};
 		loadTableData(pageParams, sortParams);
 	}
@@ -543,15 +556,7 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		}
 
 		// 添加翻页功能
-		$.fn.coolGrid.div
-				.append("<div id='pageDiv' style='width:200px;height:20px;'><a href='#'><font id='first' " +
-						"face='Webdings' style='color: #0000ff'>9</font></a>&nbsp;<a href='#'><font id='prev'" +
-						" face='Webdings' style='color: #0000ff'>3</font></a>&nbsp;<input type='text' id='currentPage'" +
-						" name='currentPage' value='1' style='width:30px;height:20px'/>/&nbsp;<input readonly " +
-						"type='text' id='pageCount' name='pageCount' value='1' style='width: 30px;height:20px;border:0;" +
-						"background:transparent;'/><a href='#'><font id='next' face='Webdings' " +
-						"style='color: #0000ff'>4</font></a>&nbsp;<a href='#'><font id='last' face='Webdings' " +
-						"style='color: #0000ff'>:</font></a></div>");
+		$.fn.coolGrid.div.append("<div id='myPager' class='pagination' ></div>");
 
 		// 画好header之后，绑定一些事件，这些事件只绑定一次，跟bindEvents函数不同
 		bindEventsOnce();
@@ -562,42 +567,9 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		$table.find(".sortAsc").bind("click", sortAscClick);
 		$table.find(".sortDesc").bind("click", sortDescClick);
 
-		// 翻页事件绑定
-		$("#pageDiv").click(function(event) {
-			var currentPage = 1;
-			var pageCount = parseInt($("#pageCount").val());
-			if (event.target.id == "first") {
-				pageQuery(1, $("#pageCount").val());
-			} else if (event.target.id == "prev") {
-				if (parseInt($("#currentPage").val()) - 1 > 0) {
-					currentPage = parseInt($("#currentPage").val()) - 1;
-				} else {
-					currentPage = pageCount;
-				}
-				pageQuery(currentPage, pageCount);
-			} else if (event.target.id == "next") {
-				if (parseInt($("#currentPage").val()) + 1 > pageCount) {
-					currentPage = 1;
-				} else {
-					currentPage = parseInt($("#currentPage").val()) + 1;
-				}
-				pageQuery(currentPage, pageCount);
-			} else if (event.target.id == "last") {
-				pageQuery(pageCount, pageCount);
-			}
-		});
-		$("#currentPage").change(function() {
-			var currentPage = parseInt($("#currentPage").val());
-			var pageCount = parseInt($("#pageCount").val());
-			if (currentPage > pageCount) {
-				alert("超出范围！");
-				currentPage = pageCount;
-			} else if (currentPage < 1) {
-				alert("超出范围！");
-				currentPage = 1;
-			}
-			pageQuery(currentPage, pageCount);
-		});
+		// 初始化翻页插件
+		$("#myPager").pagination(0,{current_page:0,items_per_page:$.fn.coolGrid.options.pageSize,
+			callback:function(page, component){}});
 
 		// 跟全表保存有关的事件绑定
 		if ($.fn.coolGrid.options.saveTableEnable != undefined) {
@@ -718,9 +690,9 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 									$td.append(data.dataSet[m][colName]);
 								}
 								break;
-							case "insert":
+							case "detail":
 								$td
-										.append("<a href='#' class='insert'><img src='images/add.gif' border='0' alt='添加记录'></a>");
+										.append("<a class='btn btn-warning btn-mini edit' href='#'><i class='icon-eye-open icon-white'></i> 详细</a>");
 								break;
 							case "delete":
 								$td
@@ -738,8 +710,12 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		}
 
 		// 修改currentPage和pageCount的值
-		$("#currentPage").val(data.pageParam.currentPage);
-		$("#pageCount").val(data.pageParam.totalPage);
+		$("#myPager").pagination(data.pageParam.totalPage,{current_page:data.pageParam.currentPage - 1,
+			items_per_page:$.fn.coolGrid.options.pageSize,callback:function(page, component){
+				$.fn.coolGrid.currentPage = page + 1;
+				$.fn.coolGrid.pageCount = data.pageParam.totalPage;
+				pageQuery(page + 1, data.pageParam.totalPage);//翻页时重新查询
+			}});
 	}
 
 	function loadTableData(pageParams, sortParams) {
@@ -799,4 +775,8 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 	$.fn.coolGrid.table;
 	$.fn.coolGrid.div;
 	$.fn.coolGrid.defaultWidth = 500;
+	$.fn.coolGrid.currentPage = 1;
+	$.fn.coolGrid.pageCount = 1;
+	$.fn.coolGrid.activeColName = "";
+	$.fn.coolGrid.activeSortOrder = "";
 })(jQuery);

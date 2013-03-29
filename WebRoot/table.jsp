@@ -17,8 +17,8 @@
 			{type:'data',display: '序号', name : 'ID', width : 15, key:true, editable:false, sortable:true},
 			{type:'data',display: '状态', name : 'STATUS', width : 23},
 			{type:'data',display: '审核人', name : 'AUDITOR', width : 23},
-			{type:'data',display: '审核日期', name : 'VERIFY_DATE', width : 24},
-			{type:'delete',display: '操作', name : 'operator', width : 15}
+			{type:'data',display: '审核日期', name : 'VERIFY_DATE', width : 24,sortable:true},
+			{type:'delete|detail',display: '操作', name : 'operator', width : 15}
 		],
 		insertModel:
 		[
