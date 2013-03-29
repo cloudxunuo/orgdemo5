@@ -13,10 +13,19 @@
     	$("#dateinput").change(function (){
     		console.log($("dateinput").serializeArray());
     	});
+    	
+    	$("#fat-btn").click(function () {
+	        var btn = $(this);
+	        btn.button("loading");
+	        setTimeout(function () {
+	          btn.button("reset");
+	        }, 3000);
+      	});
     });
     </script>
   </head>
   <body>
+  <button id="fat-btn" type="button" class="btn btn-primary" data-loading-text="Loading...">Loading state</button>
 	<!-- Button to trigger modal -->
 	<a href="#myModal" role="button" class="btn" data-toggle="modal">Launch
 		demo modal</a>
