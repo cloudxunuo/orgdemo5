@@ -950,7 +950,6 @@ table {
 }
 .table {
   width: 100%;
-  margin-bottom: 20px;
 }
 .table th,
 .table td {
@@ -3971,7 +3970,7 @@ input[type="submit"].btn.btn-mini {
   color: #999999;
 }
 .pagination {
-  margin: 20px 0;
+  margin: 2px 0;
 }
 .pagination ul {
   display: inline-block;
