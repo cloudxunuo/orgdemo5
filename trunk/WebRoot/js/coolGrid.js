@@ -106,6 +106,13 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		
 		//绑定按钮事件
 		$("#insertBtn").bind("click", onAddClick);
+		
+		//当弹出窗口隐藏时，应该复原弹出窗口至初始状态
+		$('#coolGridInsertModal').on('hidden', function () {
+			$("#insertForm").find("input").attr("tips","false");//将tips属性全部设置为false
+			$("#insertForm").find("input").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
+			$("#insertForm").find("span").remove();//清楚所有的tips
+		});
 	}
 
 	function addAttr2Div() {
@@ -265,7 +272,7 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		if (keyNull){
 			var $inputNeed =  $("#insertForm").find("input[key='true']").filter("[value='']:first");
 			if ($inputNeed.attr("tips") != "true"){
-				$inputNeed.after("<span style='color:red;margin-left:10px'>必须填写的数据</span>");
+				$inputNeed.after("<span style='color:red;margin-left:10px' class='help-inline'>必须填写的数据</span>");
 				$inputNeed.attr("tips","true");
 			}
 			$inputNeed.focus();
@@ -306,9 +313,6 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 			}
 		});
 		$("#coolGridInsertModal").modal('hide');//隐藏对话框
-		$("#insertForm").find("input").attr("tips","false");
-		$("#insertForm").find("input").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
-		$("#insertForm").find("span").remove();
 	}
 	function onDeleteClick(event) {
 		var $firstTR = $(event.target).parents("tr").filter(":first");
@@ -406,6 +410,7 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 
 	function drawQueryForm() {
 		var infoCountPerRow = 3;
+		var spanSize = 12/infoCountPerRow;
 
 		if ($.fn.coolGrid.options.width != undefined)
 			$.fn.coolGrid.div
@@ -421,33 +426,27 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 		var $queryModel = $.fn.coolGrid.options.queryModel;
 		var $queryFieldset = $("#coolGridFieldset");
 		$queryFieldset.append("<legend>" + $queryModel.legend + "</legend>");
-		$queryFieldset
-				.append("<div id='coolGridQueryForm' style='padding:5px;'></div>");
-		$("#coolGridQueryForm").append("<table style='width:100%;'></table>");
-		var $tmpTable = $("#coolGridQueryForm").children("table");
-		var $lastTR;
+		$queryFieldset.append("<div id='coolGridQueryForm' style='padding:5px;'></div>");
+		$("#coolGridQueryForm").append("<form class='form-horizontal'></form>");
+		var $form = $("#coolGridQueryForm").children("form");
+		var $lastDiv;
 		for ( var i = 0; i < $queryModel.data.length; i++) {
 			if (i % infoCountPerRow == 0) {
-				$tmpTable.append("<tr></tr>");
-				$lastTR = $tmpTable.children("tbody").children("tr").filter(
-						":last");
+				$form.append("<div class='row-fluid'></div>");
+				$lastDiv = $form.children("div.row-fluid").filter(":last");
 			}
-			$lastTR.append("<td>" + $queryModel.data[i].display + ": </td>");
-			$lastTR.append("<td><input type='text' class='input-medium' name='"
-					+ $queryModel.data[i].name + "'></td>");
+			$lastDiv.append("<div class='span"+spanSize+"'><div class='control-group'></div></div>");
+			var $spanDiv = $lastDiv.find("div.control-group").filter(":last");
+			$spanDiv.append("<label class='control-label' style='width:80px' for='"+$queryModel.data[i].name
+					+""+i+"'>" + $queryModel.data[i].display + "</label>");
+			$spanDiv.append("<div class='controls'  style='margin-left:100px' ><input type='text' class='input-medium' id='"+
+					$queryModel.data[i].name+""+i+"' name='"+ $queryModel.data[i].name + "' value=''></div>");
 		}
-		$tmpTable
-				.append("<tr><td style='text-align:right;padding-top:5px;padding-right:20px;' colspan='"
-						+ (infoCountPerRow * 2) + "'></td></tr>");
-		$lastTR = $tmpTable.children("tbody").children("tr").filter(":last");
-		$lastTR
-				.children("td")
-				.append(
-						"<font face='Webdings' class='redcolor'>4</font><a id='coolGridSearch' href='#'>查询</a>&nbsp;&nbsp;");
-		$lastTR
-				.children("td")
-				.append(
-						"<font face='Webdings' class='redcolor'>4</font><a id='coolGridReset' href='#'>重置</a>&nbsp;&nbsp;");
+		$form.append("<div class='row-fluid'></div>");
+		$lastDiv = $form.children("div.row-fluid").filter(":last");
+		$lastDiv.append("<div class='span"+spanSize+" offset"+(12 - spanSize)+"'></div>");
+		$lastDiv.children("div").append("<button id='coolGridSearch' type='button' class='btn btn-primary' data-loading-text='查询中...'>查询数据</button>");
+		$lastDiv.children("div").append("<button id='coolGridReset' type='button' class='btn btn-primary'>重置</button>");
 		$.fn.coolGrid.div.append("<br>");
 
 		// 绑定查询和重置事件
@@ -458,6 +457,12 @@ document.write("<script type='text/javascript' src='js/colResizable-1.3.med.js'>
 	}
 
 	function queryFormSearch() {
+		var btn = $(this);
+        btn.button("loading");
+        setTimeout(function () {
+          btn.button("reset");
+        }, 3000);
+		
 		var currentPage = 1;
 		var pageCount = parseInt($("#pageCount").val());
 		var pageParams = {

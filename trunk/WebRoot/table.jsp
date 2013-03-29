@@ -20,6 +20,14 @@
 			{type:'data',display: '审核日期', name : 'VERIFY_DATE', width : 24},
 			{type:'delete',display: '操作', name : 'operator', width : 15}
 		],
+		insertModel:
+		[
+			{type:'text', display:'序号',name:'ID', key:true},
+			{type:'text', display:'状态',name:'STATUS', key:true},
+			{type:'text', display:'审核人',name:'AUDITOR'},
+			{type:'text', display:'实际审核人',name:'REAL_AUDITOR'},
+			{type:'text', display:'审核日期',name:'VERIFY_DATE'}
+		],
 		queryModel:
 		{
 			legend:'审核查询信息',
@@ -28,7 +36,7 @@
 				{type:'data', display:'状态',name:'STATUS'},
 				{type:'data', display:'审核人',name:'AUDITOR'},
 				{type:'data', display:'实际审核人',name:'REAL_AUDITOR'},
-				{type:'data', display:'审核日期',name:'VERIFY_DATE'}
+				{type:'data', display:'审核日期啊客户飞洒',name:'VERIFY_DATE'}
 				]
 		},
 		sortorder: 'asc',
@@ -38,21 +46,13 @@
 		databaseTableName:'detail',
 		queryParams:[{name:'MAIN_ID',value:'SQ20120903ADMI0002'}],
 		colResize:true,
-		saveTableEnable:true,
-		insertModel:
-		[
-			{type:'text', display:'序号',name:'ID', key:true},
-			{type:'text', display:'状态',name:'STATUS', key:true},
-			{type:'text', display:'审核人',name:'AUDITOR'},
-			{type:'text', display:'实际审核人',name:'REAL_AUDITOR'},
-			{type:'text', display:'审核日期',name:'VERIFY_DATE'}
-		]
+		saveTableEnable:true
 		});
 	});
 	</script>
   </head>
   <body>
-  	<div id="test">
+  	<div style="margin-left:50px" id="test">
   	</div>
   </body>
 </html>

@@ -57,6 +57,7 @@ public class GridHandlerAction{
 		System.out.println("saveTableData in------------------!");
 		String retString = "success";
 		Session session = HibernateSessionFactory.getSession();
+		Transaction trans = session.beginTransaction();
 		
 		String dataTable = jsonObject.getString("dataTable");
 		
@@ -98,6 +99,7 @@ public class GridHandlerAction{
 			}
 		}
 		
+		trans.commit();
 		HibernateSessionFactory.closeSession();
 		return retString;
 	}
@@ -106,6 +108,7 @@ public class GridHandlerAction{
 		System.out.println("Delete in------------------!");
 		String retString = "success";
 		Session session = HibernateSessionFactory.getSession();
+		Transaction trans = session.beginTransaction();
 		
 		String dataTable = jsonObject.getString("dataTable");
 		
@@ -126,6 +129,7 @@ public class GridHandlerAction{
 			retString = "failed";
 		}
 		
+		trans.commit();
 		HibernateSessionFactory.closeSession();
 		
 		return retString;
@@ -135,6 +139,7 @@ public class GridHandlerAction{
 		System.out.println("insert in------------------!");
 		String retString = "success";
 		Session session = HibernateSessionFactory.getSession();
+		Transaction trans = session.beginTransaction();
 		String dataTable = jsonObject.getString("dataTable");
 		
 		JSONArray queryParams = jsonObject.getJSONArray("dataParams");
@@ -166,7 +171,7 @@ public class GridHandlerAction{
 		if (session.createSQLQuery(sql).executeUpdate() == 0){
 			retString = "failed";
 		}
-		
+		trans.commit();
 		HibernateSessionFactory.closeSession();
 		return retString;
 	}
@@ -175,6 +180,7 @@ public class GridHandlerAction{
 		System.out.println("Update in----------------!");
 		String retString = "success";
 		Session session = HibernateSessionFactory.getSession();
+		Transaction trans = session.beginTransaction();
 		String dataTable = jsonObject.getString("dataTable");
 		
 		JSONArray queryParams = jsonObject.getJSONArray("queryParams");
@@ -206,7 +212,7 @@ public class GridHandlerAction{
 		if (session.createSQLQuery(sql).executeUpdate() == 0){
 			retString = "failed";
 		}
-		
+		trans.commit();
 		HibernateSessionFactory.closeSession();
 		return retString;
 	}
