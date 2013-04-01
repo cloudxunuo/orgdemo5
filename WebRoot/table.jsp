@@ -22,8 +22,8 @@
 		],
 		insertModel:
 		[
-			{type:'text', display:'序号',name:'ID', key:true},
-			{type:'text', display:'状态',name:'STATUS', key:true},
+			{type:'text', display:'序号',name:'ID', nullable:"NO"},
+			{type:'text', display:'状态',name:'STATUS', nullable:"NO"},
 			{type:'text', display:'审核人',name:'AUDITOR'},
 			{type:'text', display:'实际审核人',name:'REAL_AUDITOR'},
 			{type:'text', display:'审核日期',name:'VERIFY_DATE'}

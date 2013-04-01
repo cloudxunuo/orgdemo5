@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.validator.Var;
 import org.gaara.bean.Detail;
 import org.gaara.hibernate.HibernateSessionFactory;
 import org.hibernate.Session;
@@ -46,6 +47,9 @@ public class GridHandlerAction{
 			}
 			else if(opParam.equals("saveTable")){
 				this.result = saveTableData(jsonObject).toString();
+			}
+			else if (opParam.equals("getInsertModel")){
+				this.result = getInsertModel(jsonObject).toString();
 			}
 		}catch(Exception pe){
 			pe.printStackTrace();
@@ -310,6 +314,44 @@ public class GridHandlerAction{
 		HibernateSessionFactory.closeSession();
 		
 		return returnParams;
+	}
+	
+	private JSONObject getInsertModel(JSONObject jsonObject)
+			throws JSONException, SQLException{
+		System.out.println("getInserModel in------------------!");
+		
+		String dataTable = jsonObject.getString("dataTable");
+		
+		Session session = HibernateSessionFactory.getSession();
+		
+		String sql = "SELECT column_name AS `colName`,data_type   AS `dataType`,character_maximum_length  AS `charLength`,"
+				      + "numeric_precision AS `numLength`,is_nullable AS `nullable`,column_default  AS  `defaults`,"
+				      + "column_comment  AS  `comment` FROM Information_schema.columns WHERE table_Name='";
+		sql = sql + dataTable + "';";
+		
+		ResultSet resultSet = session.connection().prepareStatement(sql).executeQuery();
+		JSONArray records = new JSONArray();
+		int i = 0;
+		while(resultSet.next()){					
+			Map map = new HashMap();
+			map.put("type", "text");
+			map.put("display", resultSet.getString("comment"));
+			map.put("name", resultSet.getString("colName"));
+			if (resultSet.getString("nullable").equals("NO")){
+				map.put("nullable", "no");
+			}
+			JSONObject record = new JSONObject(map);
+			records.put(i, record);
+			i++;
+		}
+		
+		resultSet.close();
+		HibernateSessionFactory.closeSession();
+		
+		JSONObject resultObject = new JSONObject();
+		resultObject.put("insertModel", records);
+		System.out.println(resultObject);
+		return resultObject;
 	}
 	
 	public String getParam() {
