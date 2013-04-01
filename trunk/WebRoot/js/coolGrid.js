@@ -21,14 +21,14 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 			// 如果指定了查询框
 			drawQueryForm();
 		}
-		
-		//如故insertable为true，预先设置好新增数据的modal
-		if ($.fn.coolGrid.options.insertModel != undefined){
-			SetInsertModal();
-		}
 
 		//画出表头
 		drawTableHeader();
+		
+		//如故insertable为true，预先设置好新增数据的modal,此操作必须在drawTableHeader之后
+		if ($.fn.coolGrid.options.insertModel != undefined){
+			SetInsertModal();
+		}
 
 		var pageParams = {
 			currentPage : 1,
@@ -76,27 +76,68 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 			});
 		//根据配置向modal中添加数据
 		var $form = $("#insertForm");
-		
+
 		var insertModel = $.fn.coolGrid.options.insertModel;
+		
+		if (insertModel == "get"){
+			//需要从后台获取insertModel
+			var url = $.fn.coolGrid.options.url;
+			var params = {
+					opParam : "getInsertModel",
+					dataTable : "detail",
+				};
+			var paramsString = JSON.stringify(params);
+			$.post(url,// 发送请求地址
+				{param:paramsString}, function(data) {
+					var tmp = eval('(' + data + ')');
+					insertModel = tmp.insertModel;
+					drawModel(insertModel,$form);
+			});
+		}
+		else{
+			//直接用前台配置的model
+			drawModel(insertModel,$form);
+		}
+	}
+	
+	function drawModel(insertModel,$form){
+		//$.fn.coolGrid.options配置的queryParams中作为外键添加在table中的字段,在此不能画出
+		//因为在onAddClick函数中会自动添加该值，这里如果画出，提交的时候会出现重复
+		var $table = $.fn.coolGrid.table;
+		var $foreignKeys = $table.children("input:hidden");
+		
 		for (var i = 0; i < insertModel.length; i++){
 			$form.append("<div class='control-group'></div>");
 			var $ctrlGroup = $form.find("div.control-group:last");
+			
+			var isForeignKey = false;
+			$.each($foreignKeys, function(k,val){  
+				if (insertModel[i].name == val.name){
+					isForeignKey = true;
+				}
+			});
+			
 			var types = insertModel[i].type.split("|");
 			for ( var n = 0; n < types.length; n++) {
 				switch (types[n]) {
 				case "text":
-					if (insertModel[i].key != undefined){
+					if (isForeignKey){
+						//如果是作为外键存在的字段，则不画；
+					}
+					else if (insertModel[i].nullable != undefined){
 						$ctrlGroup.append("<label class='control-label' for='"+
 								insertModel[i].name+""+i+"'>"+insertModel[i].display+"</label>"
 								+"<div class='controls'>"
-								+"  <input class='input-medium' type='text' id='"+
+								+"  <input class='input-large' type='text' id='"+
 								insertModel[i].name+""+i+"' placeholder='"+insertModel[i].display+
-								"' value='' name='"+insertModel[i].name+"' required key='true'>"+"</div>");
+								"' value='' name='"+insertModel[i].name+"' required key='true'>"+
+								"<span style='color:red;margin-left:10px;font-size:30px;' class='help-inline'>*</span>"
+								+ "</div>");
 					}else{
 						$ctrlGroup.append("<label class='control-label' for='"+
 								insertModel[i].name+""+i+"'>"+insertModel[i].display+"</label>"
 								+"<div class='controls'>"
-								+"  <input class='input-medium' type='text' id='"+
+								+"  <input class='input-large' type='text' id='"+
 								insertModel[i].name+""+i+"' placeholder='"+insertModel[i].display+
 								"' value='' name='"+insertModel[i].name+"'>"+"</div>");
 					}
@@ -114,9 +155,7 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 		
 		//当弹出窗口隐藏时，应该复原弹出窗口至初始状态
 		$('#coolGridInsertModal').on('hidden', function () {
-			$("#insertForm").find("input").attr("tips","false");//将tips属性全部设置为false
-			$("#insertForm").find("input").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
-			$("#insertForm").find("span").remove();//清楚所有的tips
+			$("#insertForm").find("input").filter("[foreignKey!=true]").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
 		});
 	}
 
@@ -280,14 +319,15 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 				}
 			}
 		});
+		// 添加table里没显示出来的外键数据
+		var foreignKey = $table.children(":input").serializeArray();
+        for ( var i = 0; i < foreignKey.length; i++) {
+                data.push(foreignKey[i]);
+        }
 		
 		//如果主键没填写
 		if (keyNull){
 			var $inputNeed =  $("#insertForm").find("input[key='true']").filter("[value='']:first");
-			if ($inputNeed.attr("tips") != "true"){
-				$inputNeed.after("<span style='color:red;margin-left:10px' class='help-inline'>必须填写的数据</span>");
-				$inputNeed.attr("tips","true");
-			}
 			$inputNeed.focus();
 			return ;
 		}
@@ -296,10 +336,6 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 			opParam : "insert"
 		};
 		param.dataTable = $.fn.coolGrid.options.databaseTableName;
-		var foreignKey = $table.children(":input").serializeArray();
-		for ( var i = 0; i < foreignKey.length; i++) {// 添加table里没显示出来的外键数据
-			data.push(foreignKey[i]);
-		}
 		param.dataParams = data;
 		var finalparam = {
 			param : JSON.stringify(param)
