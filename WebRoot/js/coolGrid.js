@@ -25,9 +25,14 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 		//画出表头
 		drawTableHeader();
 		
-		//如故insertable为true，预先设置好新增数据的modal,此操作必须在drawTableHeader之后
+		//如果insertModel定义了，预先设置好新增数据的modal,此操作必须在drawTableHeader之后
 		if ($.fn.coolGrid.options.insertModel != undefined){
-			SetInsertModal();
+			setInsertModal();
+		}
+		
+		//如果detailModel定义了，预先设置好显示详情的modal
+		if($.fn.coolGrid.options.detailModel != undefined){
+			setDetailModal();
 		}
 
 		var pageParams = {
@@ -54,7 +59,7 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 		}
 	};
 	
-	function SetInsertModal(){
+	function setInsertModal(){
 		$.fn.coolGrid.div.append("<div id='coolGridInsertModal' class='modal hide fade' tabindex='-1' role='dialog'"
 				+"		aria-labelledby='myModalLabel' aria-hidden='true' style='top:100px;width:500px'>"
 				+"		<div class='modal-header'>"
@@ -84,7 +89,7 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 			var url = $.fn.coolGrid.options.url;
 			var params = {
 					opParam : "getInsertModel",
-					dataTable : "detail",
+					dataTable : $.fn.coolGrid.options.databaseTableName,
 				};
 			var paramsString = JSON.stringify(params);
 			$.post(url,// 发送请求地址
@@ -98,48 +103,119 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 			//直接用前台配置的model
 			drawModel(insertModel,$form);
 		}
+		
+		//绑定按钮事件
+		$("#insertBtn").bind("click", onAddClick);
+		
+		//当弹出窗口隐藏时，应该复原弹出窗口至初始状态
+		$('#coolGridInsertModal').on('hidden', function () {
+			$("#insertForm").find("input").filter("[foreignKey!=true]").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
+		});
 	}
 	
-	function drawModel(insertModel,$form){
+	function setDetailModal(){
+		$.fn.coolGrid.div.append("<div id='coolGridDetailModal' class='modal hide fade' tabindex='-1' role='dialog'"
+				+"		aria-labelledby='myModalLabel' aria-hidden='true' style='top:100px;width:500px'>"
+				+"		<div class='modal-header'>"
+				+"			<button type='button' class='close' data-dismiss='modal'"
+				+"				aria-hidden='true'>×</button>"
+				+"			<h3 id='myModalLabel'>详细信息</h3>"
+				+"		</div>"
+				+"		<div class='modal-body'>"
+				+"		<form id='detailForm' class='form-horizontal'></form> </div>"
+				+"		<div class='modal-footer'>"
+				+"			<button class='btn' data-dismiss='modal' aria-hidden='true'>关闭</button>"
+				+"			<button id='saveBtn' class='btn btn-primary'>保存更改</button>"
+				+"		</div>"
+				+"	</div>");
+		//对modal的一些属性进行设置
+		$('#coolGridDetailModal').modal({
+			backdrop: "static",
+			show:false
+			});
+		//根据配置向modal中添加数据
+		var $form = $("#detailForm");
+
+		var detailModel = $.fn.coolGrid.options.detailModel;
+		
+		if (detailModel == "get"){
+			//需要从后台获取insertModel
+			var url = $.fn.coolGrid.options.url;
+			var params = {
+					opParam : "getDetailModel",
+					dataTable : $.fn.coolGrid.options.databaseTableName,
+				};
+			var paramsString = JSON.stringify(params);
+			$.post(url,// 发送请求地址
+				{param:paramsString}, function(data) {
+					var tmp = eval('(' + data + ')');
+					detailModel = tmp.detailModel;
+					drawModel(detailModel,$form);
+			});
+		}else{
+			drawModel(detailModel,$form);
+		}
+		
+		//绑定按钮事件
+		$("#saveBtn").bind("click", onUpdateClick);
+		
+		//当弹出窗口隐藏时，应该复原弹出窗口至初始状态
+		$('#coolGridDetailModal').on('hidden', function () {
+			$("#detailForm").find("input").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
+			var $div = $("#coolGridDetailModal").find(".modal-body");
+		});
+	}
+	
+	function drawModel(model,$form){
 		//$.fn.coolGrid.options配置的queryParams中作为外键添加在table中的字段,在此不能画出
 		//因为在onAddClick函数中会自动添加该值，这里如果画出，提交的时候会出现重复
 		var $table = $.fn.coolGrid.table;
 		var $foreignKeys = $table.children("input:hidden");
 		
-		for (var i = 0; i < insertModel.length; i++){
+		for (var i = 0; i < model.length; i++){
 			$form.append("<div class='control-group'></div>");
 			var $ctrlGroup = $form.find("div.control-group:last");
 			
 			var isForeignKey = false;
 			$.each($foreignKeys, function(k,val){  
-				if (insertModel[i].name == val.name){
+				if (model[i].name == val.name){
 					isForeignKey = true;
 				}
 			});
 			
-			var types = insertModel[i].type.split("|");
+			var types = model[i].type.split("|");
 			for ( var n = 0; n < types.length; n++) {
 				switch (types[n]) {
 				case "text":
 					if (isForeignKey){
 						//如果是作为外键存在的字段，则不画；
 					}
-					else if (insertModel[i].nullable != undefined){
+					else if (model[i].nullable != undefined){
 						$ctrlGroup.append("<label class='control-label' for='"+
-								insertModel[i].name+""+i+"'>"+insertModel[i].display+"</label>"
+								model[i].name+""+i+"'>"+model[i].display+"</label>"
 								+"<div class='controls'>"
 								+"  <input class='input-large' type='text' id='"+
-								insertModel[i].name+""+i+"' placeholder='"+insertModel[i].display+
-								"' value='' name='"+insertModel[i].name+"' required key='true'>"+
+								model[i].name+""+i+"' placeholder='"+model[i].display+
+								"' value='' name='"+model[i].name+"' required key='true'>"+
 								"<span style='color:red;margin-left:10px;font-size:30px;' class='help-inline'>*</span>"
 								+ "</div>");
-					}else{
+					}
+					else if (model[i].key != undefined){
 						$ctrlGroup.append("<label class='control-label' for='"+
-								insertModel[i].name+""+i+"'>"+insertModel[i].display+"</label>"
+								model[i].name+""+i+"'>"+model[i].display+"</label>"
 								+"<div class='controls'>"
 								+"  <input class='input-large' type='text' id='"+
-								insertModel[i].name+""+i+"' placeholder='"+insertModel[i].display+
-								"' value='' name='"+insertModel[i].name+"'>"+"</div>");
+								model[i].name+""+i+"' placeholder='"+model[i].display+
+								"' value='' name='"+model[i].name+"' disabled key='true'>"
+								+ "</div>");
+					}
+					else{
+						$ctrlGroup.append("<label class='control-label' for='"+
+								model[i].name+""+i+"'>"+model[i].display+"</label>"
+								+"<div class='controls'>"
+								+"  <input class='input-large' type='text' id='"+
+								model[i].name+""+i+"' placeholder='"+model[i].display+
+								"' value='' name='"+model[i].name+"'>"+"</div>");
 					}
 					break;
 				case "number":
@@ -149,14 +225,6 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 				}
 			}
 		}
-		
-		//绑定按钮事件
-		$("#insertBtn").bind("click", onAddClick);
-		
-		//当弹出窗口隐藏时，应该复原弹出窗口至初始状态
-		$('#coolGridInsertModal').on('hidden', function () {
-			$("#insertForm").find("input").filter("[foreignKey!=true]").val("");//清除上一次添加的数据，因为该弹出框只是隐藏了，若不清除，下次显示时有BUG
-		});
 	}
 
 	function addAttr2Div() {
@@ -170,7 +238,7 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 	function bindEvents() {
 		$table = $.fn.coolGrid.table;
 		$table.find(".delete").bind("click", onDeleteClick);
-		$table.find(".update").bind("click", onUpdateClick);
+		$table.find(".detail").bind("click", onDetailClick);
 		
 		//如果全表保存功能启用，绑定双击修改事件
 		if ($.fn.coolGrid.options.saveTableEnable != undefined) {
@@ -399,20 +467,61 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 		});
 
 	}
-	function onUpdateClick(event) {
+	
+	function onDetailClick(event){
 		var $tmp = $(event.target);
-		while ($tmp.parent("tr").length == 0)
-			$tmp = $tmp.parent();
+		queryParams = $tmp.parents("tr").find("input.keyData").serializeArray();
+		
+		var $obj = $.fn.coolGrid.options;
+		var url = $obj.url;
+		var dataTable = $obj.databaseTableName;
+		
+		var queryCols = [];
+		$cols = $("#detailForm").find("input");
+		for ( var j = 0; j < $cols.length; j++) {
+			var temp = {
+				name : $cols[j].name
+			};
+			queryCols.push(temp);
+		}
 
-		var queryParams = $tmp.parent("tr").find("input:hidden")
-				.serializeArray();
-		var clickRowIndex = $tmp.parent("tr").filter(":first")[0].rowIndex;
-		var colModel = $.fn.coolGrid.options.colModel;
-
+		var param = {
+			opParam : "detail",
+			dataTable : dataTable,
+			queryParams : queryParams,
+			queryCols: queryCols
+		};
+		var params = {
+			param : JSON.stringify(param)
+		};
+		$.post(url,// 发送请求地址
+		params, function(data) {
+			var tmp = eval('(' + data + ')');
+			var detail = tmp.detail;
+			for (var i = 0; i < detail.length; i++){
+				$("#detailForm").find("input").filter("[name='"+detail[i].name+"']").val(detail[i].value);
+			}
+			//显示详细信息弹出框
+			$("#coolGridDetailModal").modal("show");
+		});
+	}
+	
+	function onUpdateClick() {
+		$form = $("#detailForm");
+		var queryParams = [];
+		$disabledInput = $form.find("input").filter("[key='true']");
+		for (var i = 0; i < $disabledInput.length; i++){
+			var temp = {
+					name : $disabledInput[i].name,
+					value: $disabledInput[i].value
+				};
+			queryParams.push(temp);
+		}
+		console.log(queryParams);
 		var data = [];
-		// 如果是简单表
-		var changeParams = $tmp.parent("tr").find(":input")
-				.serializeArray();
+
+		var changeParams = $form.find("input").serializeArray();
+		console.log(changeParams);
 		for ( var key in changeParams) {
 			if (changeParams[key]["value"] != '')
 				data.push({
@@ -441,7 +550,21 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 			} else {
 				alert("修改失败");
 			}
+			//重新加载table
+			var currentPage = $.fn.coolGrid.currentPage;
+			var pageCount = $.fn.coolGrid.pageCount;
+			var pageParams = {
+				currentPage : currentPage,
+				pageSize : $.fn.coolGrid.options.pageSize,
+				totalPage : pageCount
+			};
+			var sortParams = {
+				sortCol : $.fn.coolGrid.options.activeSortCol,
+				order : $.fn.coolGrid.options.sortorder
+			};
+			loadTableData(pageParams, sortParams);
 		});
+		$("#coolGridDetailModal").modal('hide');//隐藏对话框
 	}
 
 	function pageQuery(currentPage, pageCount) {
@@ -728,15 +851,11 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 								break;
 							case "detail":
 								$td
-										.append("<a class='btn btn-warning btn-mini edit' href='#'><i class='icon-eye-open icon-white'></i> 详细</a>");
+										.append("<a class='btn btn-warning btn-mini detail' href='#'><i class='icon-eye-open icon-white'></i> 详细</a>");
 								break;
 							case "delete":
 								$td
 										.append("<a class='btn btn-warning btn-mini delete' href='#'><i class='icon-remove icon-white'></i> 删除</a>");
-								break;
-							case "edit":
-								$td
-										.append("<a class='btn btn-warning btn-mini edit' href='#'><i class='icon-pencil icon-white'></i> 编辑</a>");
 								break;
 							}
 						}
