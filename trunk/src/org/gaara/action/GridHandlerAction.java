@@ -42,6 +42,9 @@ public class GridHandlerAction{
 			else if(opParam.equals("insert")){
 				this.result = insertData(jsonObject).toString();
 			}
+			else if (opParam.equals("detail")){
+				this.result = getDetail(jsonObject).toString();
+			}
 			else if(opParam.equals("update")){
 				this.result = updateData(jsonObject).toString();
 			}
@@ -49,7 +52,10 @@ public class GridHandlerAction{
 				this.result = saveTableData(jsonObject).toString();
 			}
 			else if (opParam.equals("getInsertModel")){
-				this.result = getInsertModel(jsonObject).toString();
+				this.result = getModel(jsonObject,"insert").toString();
+			}
+			else if (opParam.equals("getDetailModel")){
+				this.result = getModel(jsonObject,"detail").toString();
 			}
 		}catch(Exception pe){
 			pe.printStackTrace();
@@ -316,9 +322,58 @@ public class GridHandlerAction{
 		return returnParams;
 	}
 	
-	private JSONObject getInsertModel(JSONObject jsonObject)
+	private JSONObject getDetail(JSONObject jsonObject) 
 			throws JSONException, SQLException{
-		System.out.println("getInserModel in------------------!");
+		System.out.println("getDetail in------------------!");
+		
+		String dataTable = jsonObject.getString("dataTable");
+		Session session = HibernateSessionFactory.getSession();
+		
+		JSONArray queryParams = jsonObject.getJSONArray("queryParams");
+		JSONArray queryCols = jsonObject.getJSONArray("queryCols");
+		
+		String sql = "select ";
+		for(int i = 0; i < queryCols.length(); i++){
+			if(i == (queryCols.length() - 1))
+				sql = sql + queryCols.getJSONObject(i).getString("name") + " ";
+			else
+				sql = sql + queryCols.getJSONObject(i).getString("name") + ",";
+		}
+		
+		sql = sql + "from " + dataTable + " where 1=1 ";
+		
+		for(int i = 0; i < queryParams.length(); i++){
+			String name = queryParams.getJSONObject(i).getString("name");
+			String value = queryParams.getJSONObject(i).getString("value");
+			sql = sql + "and " + name + "='" + value + "' ";
+		}
+		
+		System.out.println(sql);
+		ResultSet resultSet = session.connection().prepareStatement(sql).executeQuery();
+		
+		JSONArray records = new JSONArray();
+		
+		resultSet.next();//只有一条记录	
+		for(int i = 0; i < queryCols.length(); i++){
+			Map map = new HashMap();
+			map.put("name", queryCols.getJSONObject(i).getString("name"));
+			map.put("value", resultSet.getString(i+1));
+			JSONObject record = new JSONObject(map);
+			records.put(i, record);
+		}
+		resultSet.close();
+		
+		HibernateSessionFactory.closeSession();
+		
+		JSONObject result = new JSONObject();
+		result.put("detail", records);
+		System.out.println(result);
+		return result;
+	}
+	
+	private JSONObject getModel(JSONObject jsonObject, String mode)
+			throws JSONException, SQLException{
+		System.out.println("getModel in------------------!");
 		
 		String dataTable = jsonObject.getString("dataTable");
 		
@@ -326,7 +381,7 @@ public class GridHandlerAction{
 		
 		String sql = "SELECT column_name AS `colName`,data_type   AS `dataType`,character_maximum_length  AS `charLength`,"
 				      + "numeric_precision AS `numLength`,is_nullable AS `nullable`,column_default  AS  `defaults`,"
-				      + "column_comment  AS  `comment` FROM Information_schema.columns WHERE table_Name='";
+				      + "column_comment  AS  `comment`,column_key AS `key` FROM Information_schema.columns WHERE table_Name='";
 		sql = sql + dataTable + "';";
 		
 		ResultSet resultSet = session.connection().prepareStatement(sql).executeQuery();
@@ -337,8 +392,14 @@ public class GridHandlerAction{
 			map.put("type", "text");
 			map.put("display", resultSet.getString("comment"));
 			map.put("name", resultSet.getString("colName"));
-			if (resultSet.getString("nullable").equals("NO")){
-				map.put("nullable", "no");
+			if (mode.equals("insert")){
+				if (resultSet.getString("nullable").equals("NO")){
+					map.put("nullable", "no");
+				}
+			}else if(mode.equals("detail")){
+				if (resultSet.getString("key").equals("PRI")){
+					map.put("key", "true");
+				}
 			}
 			JSONObject record = new JSONObject(map);
 			records.put(i, record);
@@ -349,7 +410,11 @@ public class GridHandlerAction{
 		HibernateSessionFactory.closeSession();
 		
 		JSONObject resultObject = new JSONObject();
-		resultObject.put("insertModel", records);
+		if (mode.equals("insert")){
+			resultObject.put("insertModel", records);
+		}else if (mode.equals("detail")){
+			resultObject.put("detailModel", records);
+		}
 		System.out.println(resultObject);
 		return resultObject;
 	}
