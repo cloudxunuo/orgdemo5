@@ -71,7 +71,7 @@ document.write("<script type='text/javascript' src='js/page.js'></script>");
 				+"		<form id='insertForm' class='form-horizontal'></form> </div>"
 				+"		<div class='modal-footer'>"
 				+"			<button class='btn' data-dismiss='modal' aria-hidden='true'>关闭</button>"
-				+"			<button id='insertBtn' class='btn btn-primary'>添加数据</button>"
+				+"			<button id='insertBtn' class='btn btn-primary' data-dismiss='modal' aria-hidden='true'>添加数据</button>"
 				+"		</div>"
 				+"	</div>");
 		//对modal的一些属性进行设置
