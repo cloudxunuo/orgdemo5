@@ -3,7 +3,7 @@
 <struts>
 <package name="struts2" extends="struts-default">
 	<action name="mylogin" class="org.gaara.action.LoginAction">
-		<result name="success">/success.jsp</result>
+		<result name="success">/menu.jsp</result>
 		<result name="failure">/failure.jsp</result>
 	</action>
 </package>
