@@ -32,7 +32,7 @@
 				"</div></div>" +
 				"<div class='container' id='coolMenuBottom'>" +
 				"<div class='row-fluid'><div class='span2'>" +
-				"<div class='container' id='coolMenuSidebar'>菜单树未生成，请点击顶层菜单项</div></div>" +
+				"<div id='coolMenuSidebar'>菜单树未生成，请点击顶层菜单项</div></div>" +
 				"<div class='span10'><div class='container' id='coolMenuContent'>" +
 				"</div></div></div></div>");
 	}
