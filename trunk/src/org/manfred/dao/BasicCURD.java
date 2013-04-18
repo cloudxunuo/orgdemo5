@@ -11,9 +11,17 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.mapping.Column;
+import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Property;
+import org.manfred.bean.SamMenu;
 
 public abstract class BasicCURD {
 	public BasicCURD(){
+		System.out.println("Super Class Constructed Successfully---------!");
+	}
+	
+	public void initSession(){
 		//获取hibernate的配置信息 
 		cfg = new Configuration().configure();		
 		//根据config建立sessionFactory
@@ -22,7 +30,6 @@ public abstract class BasicCURD {
 		ses = sf.openSession();
 		//record = new SfcMaterialOrder();
 		ts = ses.beginTransaction();
-		System.out.println("Super Class Constructed Successfully---------!");
 	}
 	//public abstract void addObj(Object obj)throws Exception;
 	
@@ -44,22 +51,42 @@ public abstract class BasicCURD {
     
     //public abstract List getObj(Object obj)throws Exception;
     
-    public List getObj(String sql) throws Exception
+    public void executeQuery(String sql) throws Exception
     {
-		//根据表名称查询表字段名
-		String tempSql = "SHOW FIELDS FROM " + table;
-		System.out.println(tempSql);
-		query = ses.createQuery(tempSql);
-		fields = query.list();
-    	
-    	query = ses.createQuery(sql);
-		List records = query.list(); //序列化
-		
-		return records;
+		initSession();
+    	query = ses.createSQLQuery(sql);
+		records = query.list(); //序列化 
+    	doClose();
     }
     
-    private List fields; 
-    private String table;
+    public int queryNum(String sql) throws Exception{
+		initSession();
+    	query = ses.createQuery(sql);
+		Integer num = (Integer)query.uniqueResult();
+		doClose();
+		return (int)num;
+    }
+    
+    private void doClose(){
+    	ts.commit();
+	    ses.close();
+		sf.close();
+    }
+    
+    public List getRecords(){
+    	return records;
+    }
+    
+    public Query getQuery(){
+    	return query;
+    }
+    
+    public List getFields(){
+    	return fields;
+    }
+    
+    protected List records;
+    protected List fields; 
 	private Configuration cfg;
 	private SessionFactory sf;
 	private Session ses;

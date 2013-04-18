@@ -14,4 +14,12 @@
 		</result>
 	</action>
 </package>
+<package name="menuAction" extends="json-default">
+	<action name="menuGenerator" class="org.manfred.action.MenuGeneratorAction">
+		<result type="json">
+			<param name="records">records</param>
+			<param name="menuLevel">menuLevel</param>
+		</result>
+	</action>
+</package>
 </struts>
