@@ -3,11 +3,6 @@
 <html>
   <head>
     <title>My JSP 'head.jsp' starting page</title>
-    <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/coolGrid.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="css/mytable.css" />
-	<script type="text/javascript" src="js/bootstrap.js"></script>
 	<script type="text/javascript">
 	$(document).ready(function(){
 	  $("#test").coolGrid({
