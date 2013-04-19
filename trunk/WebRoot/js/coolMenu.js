@@ -21,7 +21,6 @@
 			addMenu(headUrl);
 			$("#coolMenuContent").load("table.jsp");
 		});
-    	var conf = $.extend($.fn.coolMenu.defaults, config);
     };
     
 	function drawLayout(){
@@ -100,9 +99,9 @@
 		$.each(tmpArray,function(n,value) {
 			if(value.SYS_CODE == part){
 				if(value.MENU_LEVEL == (level - 1) && value.MENU_FATHER == root){
-					$("#coolMenuSidebar").append("<ul class='nav nav-list'>"
-						+"<li class='nav-header' id='side"
-						+ value.MENU_CODE +"'>" + value.MENU_NAME + "</li></ul>");
+					$("#coolMenuSidebar").append("<ul class='nav nav-list' id='side"
+						+ value.MENU_CODE +"'>"
+						+"<li class='nav-header'>" + value.MENU_NAME + "</li></ul>");
 				}
 			}
 		});
@@ -130,6 +129,7 @@
     
     function jumpAction(id, url){
 		$("#coolMenuContent").html("");
+		//$("#coolMenuContent").load("table.jsp");
 		$("#coolMenuContent").append("<div>欢迎到" + id + "页面。地址:" + url + "</div>");
     }
     
