@@ -16,6 +16,8 @@
 		var $fieldset = $form.children("fieldset");
 		if (settings.title != undefined) {
 			$fieldset.append("<legend>" + settings.title + "</legend>");
+			var $legend = $fieldset.children("legend");
+			if(settings.title_align != undefined) $legend.attr("align",settings.title_align);
 		}
 		$fieldset.append("<div class='row-fluid'><div class='span"
 				+ settings.columns + "'></div></div>");

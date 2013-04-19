@@ -25,9 +25,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			type:"GET",
 			columns:12,
 			title:"入库单",
+			title_align:"center",
 			fields:
 			[
-				{type:"text",display:"入库日期",span:12,center:true},
+				{type:"text",display:"入库日期",span:12},
 				{type:"group",group:
 				[
 					{type:"text",display:"仓库编码",span:4,key:true},
