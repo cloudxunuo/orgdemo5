@@ -14,11 +14,11 @@
 	<script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/coolGrid.js"></script>
 	<script type="text/javascript">
-	$(document).ready(function(){
-		$("#main").coolMenu({url:'./menuGenerator.action',
-			headUrl:'./img/bgcerptop.gif'
+		$(document).ready(function(){
+			$("#main").coolMenu({url:'./menuGenerator.action',
+				headUrl:'./img/bgcerptop.gif'
+			});
 		});
-	});
 	</script>
   </head>
   <body>
