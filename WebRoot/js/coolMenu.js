@@ -13,6 +13,9 @@
 		$.post(url,function(data){
 			$.fn.coolMenu.data = data;
 
+			$.fn.coolMenu.result = eval('(' + $.fn.coolMenu.data.records + ')');
+			$.fn.coolMenu.itemArray = eval('(' + $.fn.coolMenu.result.records + ')');
+			
 			var tmp = eval('(' + $.fn.coolMenu.data.menuLevel + ')');
 
 			$.fn.coolMenu.menuLevel = tmp.menuLevel;
@@ -32,7 +35,7 @@
 				"<div class='container' id='coolMenuBottom'>" +
 				"<div class='row-fluid'><div class='span2'>" +
 				"<div id='coolMenuSidebar'>菜单树未生成，请点击顶层菜单项</div></div>" +
-				"<div class='span10'><div class='container' id='coolMenuContent'>" +
+				"<div class='span10'><div class='container-fluid' id='coolMenuContent'>" +
 				"</div></div></div></div>");
 	}
 	
@@ -40,103 +43,112 @@
 		$("#coolMenuHead").append("<img src='" + url +"'>");
 		if($.fn.coolMenu.menuLevel == 1){
 			$("#coolMenuNavBar").append("<div class='span11'><a class='brand'>欢迎用户:" 
-					+ "管理员" + "</a></div>" + "<ul class='nav'><li><a href='#'>退出</li></ul>");			
+					+ "管理员" + "</a></div>" + "<ul class='nav'><li><a href='#'>退出</li></ul>");		
 		}else{
 			$("#coolMenuNavBar").append("<div class='span3'><a class='brand'>欢迎用户:" 
 					+ "管理员" + "</a></div>" + "<ul class='nav' id='coolMenuItem'></ul>");
-			var tmp = eval('(' + $.fn.coolMenu.data.records + ')');
-			var tmpArray = eval('(' + tmp.records + ')');
 			
-			$.each(tmpArray,function(n,value) {
+			$.each($.fn.coolMenu.itemArray, function(n, value) {
 				if(value.MENU_LEVEL == 1){
-					$("#coolMenuItem").append("<li class='dropdown'>" +
-							"<a class='dropdown-toggle' data-toggle='dropdown' href='#'>" + value.MENU_NAME +
-								"<b class='caret'></b></a>" +
-							"<ul class='dropdown-menu' id='" + value.MENU_CODE + "'></ul></li>");
+					$("#coolMenuItem").append("<li class='dropdown' id='" + value.MENU_CODE + "'>"
+							+ "<a class='dropdown-toggle' data-toggle='dropdown' href='#' id='menuAction"
+							+ value.MENU_CODE + "'>" + value.MENU_NAME + "<b class='caret'></b></a>"
+							+ "<ul class='dropdown-menu'></ul></li>");
+					$("#menuAction" + value.MENU_CODE).click(function(){
+						console.log(value.MENU_CODE);
+						addSidebar(value);
+					});
 				}
 			});
 			
 			for(var i = 1; i < $.fn.coolMenu.menuLevel; i++){
-				$.each(tmpArray,function(n,value) {
+				$.each($.fn.coolMenu.itemArray, function(n, value){
 					if(value.MENU_LEVEL == (i + 1)){
 						if(value.LEAF_FLAG == 'Y'){
-							var linkUrl;
-							if(value.PROG_PARAM == undefined)
-								linkUrl = value.PROG_URL;
-							else
-								linkUrl = value.PROG_URL + "?" + "proj_param=" + value.PROG_PARAM;
-							$("#" + value.MENU_FATHER).append("<li id='" + value.MENU_CODE
-									+"'><a href='#'>" + value.MENU_NAME + "</a></li>");
-							$("#" + value.MENU_CODE).click(function(){
-								leafClick(value.MENU_LEVEL, value.MENU_CODE, value.SYS_CODE, 
-										value.MENU_FATHER ,linkUrl);
-							});
+							$("#" + value.MENU_FATHER + " ul:first").append("<li id='" + value.MENU_CODE
+									+"'><a href='#' id='menuAction" + value.MENU_CODE 
+									+ "'>" + value.MENU_NAME + "</a></li>");
 						}else{
-							$("#" + value.MENU_FATHER).append("<li class='dropdown-submenu'>" +
-								"<a tabindex='-1' href='#'>" + value.MENU_NAME + "</a>" +
-								"<ul class='dropdown-menu' id='" + value.MENU_CODE + "'></ul></li>");
+							$("#" + value.MENU_FATHER + " ul:first").append("<li class='dropdown-submenu' id='"
+								+ value.MENU_CODE + "'><a tabindex='-1' href='#' id='menuAction" + value.MENU_CODE 
+								+ "'>" + value.MENU_NAME + "</a>" + "<ul class='dropdown-menu'></ul></li>");
 						}
+						$("#menuAction" + value.MENU_CODE).click(function(){
+							console.log(value.MENU_CODE);
+							addSidebar(value);
+						});
 					}
 				});
-			}
+			}	
 			$("#coolMenuItem").append("<li id='coolMenuQuit'><a href='#'>退出</li>");
 		}
 	}
 
-    function leafClick(level, id, part, parent, url){
-    	$("#coolMenuSidebar").empty();
-    	jumpAction(id, url);
-		var tmp = eval('(' + $.fn.coolMenu.data.records + ')');
-		var tmpArray = eval('(' + tmp.records + ')');
-		var root;
+    function addSidebar(item){
+    	$("#coolMenuSidebar").html("");
+    	
+    	if(item.LEAF_FLAG == 'Y')
+    		jumpAction(item);
 		
-		$.each(tmpArray,function(n,value) {
-			if(value.MENU_CODE == parent){
-				root = value.MENU_FATHER;
-			}
-		});
-		
-		$.each(tmpArray,function(n,value) {
-			if(value.SYS_CODE == part){
-				if(value.MENU_LEVEL == (level - 1) && value.MENU_FATHER == root){
-					$("#coolMenuSidebar").append("<ul class='nav nav-list' id='side"
-						+ value.MENU_CODE +"'>"
-						+"<li class='nav-header'>" + value.MENU_NAME + "</li></ul>");
-				}
-			}
-		});
-		
-		$.each(tmpArray,function(n,value) {
-			if($("#side" + value.MENU_FATHER).length > 0){
-				if(id == value.MENU_CODE){
-					$("#side" + value.MENU_FATHER).append("<li class='active' id='side" +
-						value.MENU_CODE + "'><a href='#'>"+ value.MENU_NAME +"</a></li>");
-				}else{
-					$("#side" + value.MENU_FATHER).append("<li id='side" +
-						value.MENU_CODE + "'><a href='#'>"+ value.MENU_NAME +"</a></li>");
-				}
-				$("#side" + value.MENU_CODE).click(function(){
-					var linkUrl;
-					if(value.PROG_PARAM == undefined)
-						linkUrl = value.PROG_URL;
-					else
-						linkUrl = value.PROG_URL + "?" + "proj_param=" + value.PROG_PARAM;
-					jumpAction(value.MENU_CODE, linkUrl);
+		$("#coolMenuSidebar").append("<ul class='nav nav-list' id='side"
+			+ item.MENU_CODE + "'>"
+			+ "<li class='nav-header'>" + item.MENU_NAME + "</li></ul>");
+
+		$.each($.fn.coolMenu.itemArray, function(n, value) {
+			if(value.MENU_FATHER == item.MENU_CODE){
+				$("#side" + value.MENU_FATHER).append("<li id='side" +
+					value.MENU_CODE + "'><a href='#' id='sideAction" + value.MENU_CODE + "'>"
+					+ value.MENU_NAME +"</a></li>");
+				
+				$("#sideAction" + value.MENU_CODE).click(function(){
+					sidebarItemClick(value);
 				});
 			}
 		});
     }
     
-    function jumpAction(id, url){
+    function jumpAction(item){
+		var linkUrl;
+		if(item.PROG_PARAM == undefined)
+			linkUrl = item.PROG_URL;
+		else
+			linkUrl = item.PROG_URL + "?" + "proj_param=" + item.PROG_PARAM;
 		$("#coolMenuContent").html("");
 		//$("#coolMenuContent").load("table.jsp");
-		$("#coolMenuContent").append("<div>欢迎到" + id + "页面。地址:" + url + "</div>");
+		$("#coolMenuContent").append("<div>欢迎到" + item.MENU_CODE + "页面。地址:" + linkUrl + "</div>");
     }
     
+    function sidebarItemClick(item){
+    	if(item.LEAF_FLAG == 'Y')
+    		jumpAction(item);
+    	else{
+    		if($("#side" + item.MENU_CODE + " ul").length > 0){
+    			$("#side" + item.MENU_CODE).html("<a href='#' id='sideAction" + item.MENU_CODE
+    				+ "'>" + item.MENU_NAME + "</a>");
+				$("#sideAction" + item.MENU_CODE).click(function(){
+					sidebarItemClick(item);
+				});
+    		}else{		
+    			$.each($.fn.coolMenu.itemArray, function(n, value) {
+    				if(value.MENU_FATHER == item.MENU_CODE){
+    					$("#side" + value.MENU_FATHER).append("<ul class='nav nav-list'><li id='side" +
+    						value.MENU_CODE + "'><a href='#' id='sideAction" + value.MENU_CODE + "'>"
+    						+ value.MENU_NAME +"</a></li></ul>");
+    					
+    					$("#sideAction" + value.MENU_CODE).click(function(){
+    						sidebarItemClick(value);
+    					});
+    				}
+    			});
+    		}
+    	}
+    }
+
+    $.fn.coolMenu.result;
+    $.fn.coolMenu.itemArray;
     $.fn.coolMenu.menuLevel;
     $.fn.coolMenu.data;
 	$.fn.coolMenu.options = {};
 	$.fn.coolMenu.div;
-    
-    $.fn.coolMenu.defaults = {};
+    $.fn.coolMenu.defaults = {};    
 })(jQuery);
