@@ -22,20 +22,20 @@
 			
 			drawLayout();
 			addMenu(headUrl);
-			$("#coolMenuContent").load("table.jsp");
+			//$("#coolMenuContent").load("table.jsp");
 		});
     };
     
 	function drawLayout(){
 		$.fn.coolMenu.div.append("<div class='container'>" +
-				"<div class='span11'>" + "<div class='row-fluid' id='coolMenuHead'></div>" +
+				"<div class='span12'>" + "<div class='row-fluid' id='coolMenuHead'></div>" +
 				"<div class='row-fluid'>" +
 				"<div class='navbar'><div class='navbar-inner' id='coolMenuNavBar'></div>" + 
 				"</div></div>" +
 				"<div class='container' id='coolMenuBottom'>" +
-				"<div class='row-fluid'><div class='span2'>" +
-				"<div id='coolMenuSidebar'>菜单树未生成，请点击顶层菜单项</div></div>" +
-				"<div class='span10'><div class='container-fluid' id='coolMenuContent'>" +
+				"<div class='row-fluid'><div class='span3'>" +
+				"<div id='coolMenuSidebar' style='position:absolute; height:400px; overflow:auto'>菜单树未生成，请点击顶层菜单项</div></div>" +
+				"<div class='span9'><div class='container' id='coolMenuContent'>" +
 				"</div></div></div></div>");
 	}
 	
@@ -79,7 +79,7 @@
 						});
 					}
 				});
-			}	
+			}
 			$("#coolMenuItem").append("<li id='coolMenuQuit'><a href='#'>退出</li>");
 		}
 	}
@@ -90,21 +90,31 @@
     	if(item.LEAF_FLAG == 'Y')
     		jumpAction(item);
 		
-		$("#coolMenuSidebar").append("<ul class='nav nav-list' id='side"
+		$("#coolMenuSidebar").append("<ul class='nav nav-list' id='collapse"
 			+ item.MENU_CODE + "'>"
 			+ "<li class='nav-header'>" + item.MENU_NAME + "</li></ul>");
-
-		$.each($.fn.coolMenu.itemArray, function(n, value) {
-			if(value.MENU_FATHER == item.MENU_CODE){
-				$("#side" + value.MENU_FATHER).append("<li id='side" +
-					value.MENU_CODE + "'><a href='#' id='sideAction" + value.MENU_CODE + "'>"
-					+ value.MENU_NAME +"</a></li>");
-				
-				$("#sideAction" + value.MENU_CODE).click(function(){
-					sidebarItemClick(value);
-				});
-			}
-		});
+		
+		for(var i = item.MENU_LEVEL + 1; i < ($.fn.coolMenu.menuLevel + 1); i++){
+			$.each($.fn.coolMenu.itemArray, function(n, value){
+				if(value.MENU_LEVEL == i && $("#collapse" + value.MENU_FATHER).length > 0){
+					if(value.LEAF_FLAG == 'Y'){
+						$("#collapse" + value.MENU_FATHER).append("<li><a href='#' id='sideAction"
+								+ value.MENU_CODE + "'>" + value.MENU_NAME + "</a></li>");
+						$("#sideAction" + value.MENU_CODE).click(function(){
+							console.log(value.MENU_CODE);
+							jumpAction(value);
+						});
+					}else{					
+						$("#collapse" + value.MENU_FATHER).append("<ul class='nav nav-list'><li>"
+							+ "<a href='#' id='sideAction" + value.MENU_CODE
+							+ "' class='collapsed' data-toggle='collapse' data-target='#collapse"
+							+ value.MENU_CODE + "'>" + value.MENU_NAME + "</a>"
+							+ "<ul class='nav nav-list'><div id='collapse" + value.MENU_CODE
+							+ "' class='collapse'></div></ul></li></ul>");
+					}
+				}
+			});
+		}
     }
     
     function jumpAction(item){
@@ -117,7 +127,7 @@
 		//$("#coolMenuContent").load("table.jsp");
 		$("#coolMenuContent").append("<div>欢迎到" + item.MENU_CODE + "页面。地址:" + linkUrl + "</div>");
     }
-    
+    /*
     function sidebarItemClick(item){
     	if(item.LEAF_FLAG == 'Y')
     		jumpAction(item);
@@ -143,6 +153,7 @@
     		}
     	}
     }
+    */
 
     $.fn.coolMenu.result;
     $.fn.coolMenu.itemArray;
