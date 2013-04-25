@@ -13,8 +13,11 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class MenuGeneratorAction extends ActionSupport {
+	private String opParam;
+	
 	public String execute(){
 		System.out.println("MenuGenerator In-----------------!");
+		System.out.println(opParam);
 		basicDao = new MenuDaoImp();
 		try{
 			String tempSQL = "select";
@@ -93,6 +96,14 @@ public class MenuGeneratorAction extends ActionSupport {
 	
 	public String getMenuLevel(){
 		return menuLevel;
+	}
+	
+	public String getOpParam(){
+		return opParam;
+	}
+	
+	public void setOpParam(String opParam){
+		this.opParam = opParam;
 	}
 	
 	private BasicCURD basicDao;
