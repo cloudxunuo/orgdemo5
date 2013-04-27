@@ -27,11 +27,13 @@ public class MenuGeneratorAction extends ActionSupport {
 				rs1.put("menuLevel",getMaxMenuLevel());
 				JSONObject jobj1 = new JSONObject(rs1);
 				menuLevel = jobj1.toString();				
-				queryMenuItems(startLevel);
+				queryMenuItems();
 			}
+			/*
 			if(opParam.equals("load")){
-				
+				queryMenuItems(fatherCode);
 			}
+			*/
 			
 			if(basicDao.getQuery() != null){
 				Map rs2 = new HashMap();
@@ -52,6 +54,28 @@ public class MenuGeneratorAction extends ActionSupport {
 	}
 	
 	//根据父节点获得数据项
+	public void queryMenuItems() throws JSONException, SQLGrammarException{
+		sql = "select ";
+		String order = " order by ";
+
+		for(int i = 0; i < mapItems.length(); i++){			
+			String tableField = ((JSONObject)mapItems.get(i)).getString("tableField");
+			String defineAs = ((JSONObject)mapItems.get(i)).getString("definedAs");
+			if(defineAs.equals("MENU_INDEX"))
+				order += tableField;
+
+			if(i == (mapItems.length() - 1))
+				sql = sql + tableField + " from " + tableName;
+			else
+				sql = sql + tableField + ",";
+		}
+		sql = sql + order;
+
+		System.out.println(sql);
+		basicDao.executeQuery(sql);
+	}
+	
+	//根据父节点获得数据项
 	public void queryMenuItems(String menuFather) throws JSONException, SQLGrammarException{
 		sql = "select ";
 		String where = " where ";
@@ -62,7 +86,7 @@ public class MenuGeneratorAction extends ActionSupport {
 			String defineAs = ((JSONObject)mapItems.get(i)).getString("definedAs");
 			if(defineAs.equals("MENU_INDEX"))
 				order += tableField;
-			if(defineAs.equals("MENU_CODE"))
+			if(defineAs.equals("MENU_FATHER"))
 				where = where + tableField + "='" + menuFather + "'";
 			if(i == (mapItems.length() - 1))
 				sql = sql + tableField + " from " + tableName;
