@@ -12,9 +12,7 @@ import org.manfred.bean.SamMenu;
 public class MenuDaoImp extends BasicCURD{
 	public MenuDaoImp(){
 		super();
-		fields = HibernateConfigurationHelper.getAllColName(SamMenu.class);
-		System.out.println(fields);
+		//fields = HibernateConfigurationHelper.getAllColName(SamMenu.class);
+		//System.out.println(fields);
 	}
-	
-	//private Connection connection = null;
 }
