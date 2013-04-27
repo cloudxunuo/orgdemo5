@@ -6,15 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.PersistentClass;
-import org.hibernate.mapping.Property;
-import org.manfred.bean.SamMenu;
 
 public abstract class BasicCURD {
 	public BasicCURD(){
@@ -51,7 +48,7 @@ public abstract class BasicCURD {
     
     //public abstract List getObj(Object obj)throws Exception;
     
-    public void executeQuery(String sql) throws Exception
+    public void executeQuery(String sql) throws HibernateException
     {
 		initSession();
     	query = ses.createSQLQuery(sql);
@@ -61,7 +58,7 @@ public abstract class BasicCURD {
     
     public int queryNum(String sql) throws Exception{
 		initSession();
-    	query = ses.createQuery(sql);
+    	query = ses.createSQLQuery(sql);
 		Integer num = (Integer)query.uniqueResult();
 		doClose();
 		return (int)num;

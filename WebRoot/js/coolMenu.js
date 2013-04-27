@@ -4,17 +4,25 @@
 (function($){
     $.fn.coolMenu = function(config){
         //各种属性、参数
+    	//alert(config.mapModel);
+		$.fn.coolMenu.mapModel = config.mapModel;
+		$.fn.coolMenu.tableName = config.tableName;
 		$.extend($.fn.coolMenu.options, config);
 		$.fn.coolMenu.div = $(this);
-
+		
     	var url = $.fn.coolMenu.options.url;
     	var headUrl = $.fn.coolMenu.options.headUrl;
     	
-    	var params = {opParam:'initial'};
-    	
-		$.post(url,params,function(data){
-			$.fn.coolMenu.data = data;
+    	var params = {mapModel:JSON.stringify(config.mapModel),
+    			opParam:'initial',
+    			startLevel:config.startLevel,
+    			tableName:config.tableName
+    	};
 
+		$.post(url,params,function(data){
+			alert("0");
+			$.fn.coolMenu.data = data;
+			
 			$.fn.coolMenu.result = eval('(' + $.fn.coolMenu.data.records + ')');
 			$.fn.coolMenu.itemArray = eval('(' + $.fn.coolMenu.result.records + ')');
 			
@@ -189,8 +197,8 @@
 		});
     }
     
-    $.fn.coolMenu.topMenu;
-    $.fn.coolMenu.sideMenu;
+    $.fn.coolMenu.tableName;
+    $.fn.coolMenu.mapModel;
     $.fn.coolMenu.result;
     $.fn.coolMenu.itemArray;
     $.fn.coolMenu.menuLevel;
