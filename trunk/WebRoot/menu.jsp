@@ -35,7 +35,10 @@
 				//根节点开始层数
 				startLevel:1,
 				//数据库对应表单名称
-				tableName:'sam_menu'
+				tableName:'sam_menu',
+				contentPage:'table.jsp',
+				showModel:'side',
+				topLevel:2,
 			});
 		});
 	</script>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+	<package name="struts2" extends="struts-default">
+	        <action name="mylogin" class="org.gaara.action.LoginAction">
+	                <result name="success">/menu.jsp</result>
+	                <result name="failure">/failure.jsp</result>
+	        </action>
+	</package>
+	<package name="ajax" extends="json-default">
+	        <action name="gridHandler" class="org.gaara.action.GridHandlerAction">
+	                <result type="json">
+	                        <param name="root">result</param>
+	                </result>
+	        </action>
+	</package>
+	<package name="menuAction" extends="json-default">
+	        <action name="menuGenerator" class="org.manfred.action.MenuGeneratorAction">
+	                <result type="json">
+	                        <param name="records">records</param>
+	                        <param name="menuLevel">menuLevel</param>
+	                </result>
+	        </action>
+	</package>
+</struts>
